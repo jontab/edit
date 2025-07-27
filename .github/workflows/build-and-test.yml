@@ -53,5 +53,8 @@ jobs:
 # test                                                                         #
 ################################################################################
 
+    - name: run-edit-client-terminal-tests
+      run: $BUILD_DIR_CLIENT_TERMINAL/edit-tests
+
     - name: run-edit-common-tests
       run: $BUILD_DIR_COMMON/edit-common-tests

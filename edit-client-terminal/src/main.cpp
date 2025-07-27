@@ -1,13 +1,11 @@
 #include "Editor.hpp"
-#include "ViewContext.hpp"
 #include <exception>
 
 int main(int argc, char **argv)
 {
-    edit::Editor editor;
     try
     {
-        edit::ViewContext ctx;
+        edit::Editor editor{std::make_unique<edit::DefaultView>()};
         editor.run();
     }
     catch (const std::exception &error)

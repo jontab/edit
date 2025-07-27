@@ -20,10 +20,14 @@ target_include_directories(termbox2 INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/../dep
 ################################################################################
 
 add_library(edit-client-terminal
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/BufferComponent.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Editor.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ViewContext.cpp)
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/StatusComponent.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/View.cpp)
 
 target_include_directories(edit-client-terminal PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+target_compile_options(edit-client-terminal PRIVATE -Wall -Werror)
 
 target_link_libraries(edit-client-terminal PUBLIC edit-common termbox2)
 
@@ -34,3 +38,23 @@ target_link_libraries(edit-client-terminal PUBLIC edit-common termbox2)
 add_executable(edit ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
 
 target_link_libraries(edit PRIVATE edit-client-terminal)
+
+################################################################################
+# edit-tests                                                                   #
+################################################################################
+
+if(BUILD_TESTING)
+    enable_testing()
+
+    add_executable(edit-tests
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/BusTests.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/EditorTests.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/StatusComponentTests.cpp)
+
+    target_link_libraries(edit-tests
+        edit-client-terminal
+        GTest::gtest_main)
+
+    include(GoogleTest)
+    gtest_discover_tests(edit-tests)
+endif()
