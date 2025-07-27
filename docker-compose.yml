@@ -1,0 +1,7 @@
+services:
+  edit-server:
+    build:
+      context: .
+    container_name: edit-server
+    ports:
+      - "3000:3000"
