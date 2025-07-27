@@ -1,4 +1,5 @@
 #include "edit-common/Buffer.hpp"
+#include <algorithm>
 
 edit::common::Buffer::Buffer() : data()
 {
@@ -82,7 +83,7 @@ int edit::common::find_sorted_position(const std::vector<Char> &chars, const edi
     // This algorithm enforces the following rules:
     //   (1). Siblings (characters with the same parent) are sorted in order of increasing site.
     //   (2). A character will either come before its sibling and the sibling's children or after, based on rule (1).
-    for (i = parent + 1; i < chars.size(); i++)
+    for (i = parent + 1; i < (int)chars.size(); i++)
     {
         const auto &i_ch = chars.at(i);
         if (i_ch.clock < ch.clock)

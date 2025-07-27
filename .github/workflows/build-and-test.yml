@@ -1,0 +1,57 @@
+name: build-and-test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  BUILD_DIR: ${{ github.workspace }}/build
+  BUILD_DIR_CLIENT_TERMINAL: $BUILD_DIR/edit-client-terminal
+  BUILD_DIR_COMMON: $BUILD_DIR/edit-common
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+
+################################################################################
+# setup                                                                        #
+################################################################################
+
+    - name: setup-runner
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake build-essential git zlib1g-dev
+
+    - name: setup-runner-docker
+      uses: docker/setup-buildx-action@v3
+
+    - uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+
+################################################################################
+# build                                                                        #
+################################################################################
+
+    - name: build-edit-client-terminal
+      run: |
+        cmake -S edit-client-terminal -B $BUILD_DIR_CLIENT_TERMINAL
+        make -C $BUILD_DIR_CLIENT_TERMINAL
+
+    - name: build-edit-common
+      run: |
+        cmake -S edit-common -B $BUILD_DIR_COMMON
+        make -C $BUILD_DIR_COMMON
+
+    - name: build-edit-server
+      run: docker build . -t test-image:latest
+
+################################################################################
+# test                                                                         #
+################################################################################
+
+    - name: run-edit-common-tests
+      run: $BUILD_DIR_COMMON/edit-common-tests
