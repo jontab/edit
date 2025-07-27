@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
+COPY common.cmake common.cmake
 COPY deps/ deps/
 COPY edit-server/ edit-server/
 
