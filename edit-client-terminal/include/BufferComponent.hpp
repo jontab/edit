@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Bus.hpp"
+#include "Point.hpp"
 #include <edit-common/Buffer.hpp>
 #include <utility>
 
@@ -27,21 +28,23 @@ class BufferComponent
     BufferComponent(ActionBus &action_bus, const std::vector<common::Char> &chars);
     BufferComponent(ActionBus &action_bus, std::vector<common::Char> &&chars);
 
-    int site() const;
     void set_cursor_index(std::size_t index);
-    std::size_t get_cursor_index() const;
+    int site() const;
     std::size_t get_cursor_y() const;
-    std::pair<std::size_t, std::size_t> get_cursor_position() const;
+    Point get_cursor_position() const;
 
   private:
     void handle_cursor_up();
     void handle_cursor_down();
     void handle_cursor_left();
     void handle_cursor_right();
-
     void calculate_lines();
-    std::size_t calculate_line_offset(const Line &line, std::size_t index) const;
-    std::size_t calculate_line_offset_add(const Line &line, std::size_t count) const;
+    std::size_t calculate_x(const Line &line, std::size_t index) const;
+    std::size_t calculate_x_index(const Line &line, std::size_t count) const;
+    std::size_t next_visible_before(std::size_t index) const;
+    std::size_t next_visible_after(std::size_t index) const;
+    bool is_y_at_top(std::size_t y) const;
+    bool is_y_at_bottom(std::size_t y) const;
 };
 
 } // namespace edit

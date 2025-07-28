@@ -22,6 +22,7 @@ target_include_directories(termbox2 INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/../dep
 add_library(edit-client-terminal
     ${CMAKE_CURRENT_SOURCE_DIR}/src/BufferComponent.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Editor.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Point.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/StatusComponent.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/View.cpp)
 

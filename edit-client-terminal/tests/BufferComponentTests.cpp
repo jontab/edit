@@ -1,18 +1,25 @@
 #include "BufferComponent.hpp"
 #include <gtest/gtest.h>
 
-void checkpos(const std::pair<std::size_t, std::size_t> &a, const std::pair<std::size_t, std::size_t> &b)
+using ActionBus = edit::ActionBus;
+using BufferComponent = edit::BufferComponent;
+using Point = edit::Point;
+
+template <typename ActionType>
+void verify_cursor(ActionBus &bus, BufferComponent &buffer, std::size_t index, const Point &from, const Point &to)
 {
-    ASSERT_EQ(a.first, b.first);
-    ASSERT_EQ(a.second, b.second);
+    buffer.set_cursor_index(index);
+    EXPECT_EQ(buffer.get_cursor_position(), from);
+    bus.publish(edit::Action{ActionType{}});
+    EXPECT_EQ(buffer.get_cursor_position(), to);
 }
 
 TEST(BufferComponentTests, Site_IsRandom)
 {
     srand(1337);
-    edit::ActionBus bus;
-    edit::BufferComponent a{bus};
-    edit::BufferComponent b{bus};
+    ActionBus bus;
+    BufferComponent a{bus};
+    BufferComponent b{bus};
     EXPECT_NE(a.site(), b.site());
 }
 
@@ -35,32 +42,12 @@ TEST(BufferComponentTests, CursorUp_WorksAsExpected)
         {.ch = '!',  .is_deleted = false},
         {.ch = '!',  .is_deleted = false},
     };
-    edit::ActionBus bus;
-    edit::BufferComponent buf{bus, std::move(chars)};
-
-    // Moving up normally.
-    buf.set_cursor_index(7);
-    checkpos(buf.get_cursor_position(), std::make_pair(1, 0));
-    bus.publish(edit::Action{edit::CursorUp{}});
-    checkpos(buf.get_cursor_position(), std::make_pair(0, 0));
-
-    // Moving up from initial row doesn't do anything.
-    buf.set_cursor_index(0);
-    checkpos(buf.get_cursor_position(), std::make_pair(0, 0));
-    bus.publish(edit::Action{edit::CursorUp{}});
-    checkpos(buf.get_cursor_position(), std::make_pair(0, 0));
-
-    // Moving up from a deleted character.
-    buf.set_cursor_index(9);
-    checkpos(buf.get_cursor_position(), std::make_pair(1, 2));
-    bus.publish(edit::Action{edit::CursorUp{}});
-    checkpos(buf.get_cursor_position(), std::make_pair(0, 2));
-
-    // Moving up from a longer row clamps the column.
-    buf.set_cursor_index(15);
-    checkpos(buf.get_cursor_position(), std::make_pair(1, 7));
-    bus.publish(edit::Action{edit::CursorUp{}});
-    checkpos(buf.get_cursor_position(), std::make_pair(0, 6));
+    ActionBus bus;
+    BufferComponent buffer{bus, std::move(chars)};
+    verify_cursor<edit::CursorUp>(bus, buffer, 7, {1, 0}, {0, 0});  // Moving up normally.
+    verify_cursor<edit::CursorUp>(bus, buffer, 0, {0, 0}, {0, 0});  // Moving up from first row is a no-op.
+    verify_cursor<edit::CursorUp>(bus, buffer, 9, {1, 2}, {0, 2});  // Moving up from a deleted character.
+    verify_cursor<edit::CursorUp>(bus, buffer, 15, {1, 7}, {0, 6}); // Moving up from a longer row clamps.
 }
 
 TEST(BufferComponentTests, CursorDown_WorksAsExpected)
@@ -82,32 +69,12 @@ TEST(BufferComponentTests, CursorDown_WorksAsExpected)
         {.ch = 'd',  .is_deleted = false},
         {.ch = '!',  .is_deleted = false},
     };
-    edit::ActionBus bus;
-    edit::BufferComponent buf{bus, std::move(chars)};
-
-    // Moving down normally.
-    buf.set_cursor_index(0);
-    checkpos(buf.get_cursor_position(), std::make_pair(0, 0));
-    bus.publish(edit::Action{edit::CursorDown{}});
-    checkpos(buf.get_cursor_position(), std::make_pair(1, 0));
-
-    // Moving down from final row doesn't do anything.
-    buf.set_cursor_index(9);
-    checkpos(buf.get_cursor_position(), std::make_pair(1, 0));
-    bus.publish(edit::Action{edit::CursorDown{}});
-    checkpos(buf.get_cursor_position(), std::make_pair(1, 0));
-
-    // Moving down from a deleted character.
-    buf.set_cursor_index(5);
-    checkpos(buf.get_cursor_position(), std::make_pair(0, 5));
-    bus.publish(edit::Action{edit::CursorDown{}});
-    checkpos(buf.get_cursor_position(), std::make_pair(1, 5));
-
-    // Moving down from a longer row clamps the column.
-    buf.set_cursor_index(8);
-    checkpos(buf.get_cursor_position(), std::make_pair(0, 7));
-    bus.publish(edit::Action{edit::CursorDown{}});
-    checkpos(buf.get_cursor_position(), std::make_pair(1, 6));
+    ActionBus bus;
+    BufferComponent buffer{bus, std::move(chars)};
+    verify_cursor<edit::CursorDown>(bus, buffer, 0, {0, 0}, {1, 0}); // Moving down normally.
+    verify_cursor<edit::CursorDown>(bus, buffer, 9, {1, 0}, {1, 0}); // Moving down from final row is a no-op.
+    verify_cursor<edit::CursorDown>(bus, buffer, 5, {0, 5}, {1, 5}); // Moving down from a deleted character.
+    verify_cursor<edit::CursorDown>(bus, buffer, 8, {0, 7}, {1, 6}); // Moving down from a longer row clamps.
 }
 
 TEST(BufferComponentTests, CursorLeft_WorksAsExpected)
@@ -119,32 +86,12 @@ TEST(BufferComponentTests, CursorLeft_WorksAsExpected)
         {.ch = 'l', .is_deleted = true },
         {.ch = 'o', .is_deleted = false},
     };
-    edit::ActionBus bus;
-    edit::BufferComponent buf{bus, std::move(chars)};
-
-    // Moving left normally.
-    buf.set_cursor_index(1);
-    checkpos(buf.get_cursor_position(), std::make_pair(0, 1));
-    bus.publish(edit::Action{edit::CursorLeft{}});
-    checkpos(buf.get_cursor_position(), std::make_pair(0, 0));
-
-    // Moving left from origin doesn't do anything.
-    buf.set_cursor_index(0);
-    checkpos(buf.get_cursor_position(), std::make_pair(0, 0));
-    bus.publish(edit::Action{edit::CursorLeft{}});
-    checkpos(buf.get_cursor_position(), std::make_pair(0, 0));
-
-    // Moving left from a deleted character.
-    buf.set_cursor_index(3);
-    checkpos(buf.get_cursor_position(), std::make_pair(0, 2));
-    bus.publish(edit::Action{edit::CursorLeft{}});
-    checkpos(buf.get_cursor_position(), std::make_pair(0, 1));
-
-    // Moving left over a deleted character.
-    buf.set_cursor_index(4);
-    checkpos(buf.get_cursor_position(), std::make_pair(0, 2));
-    bus.publish(edit::Action{edit::CursorLeft{}});
-    checkpos(buf.get_cursor_position(), std::make_pair(0, 1));
+    ActionBus bus;
+    BufferComponent buffer{bus, std::move(chars)};
+    verify_cursor<edit::CursorLeft>(bus, buffer, 1, {0, 1}, {0, 0}); // Moving left normally.
+    verify_cursor<edit::CursorLeft>(bus, buffer, 0, {0, 0}, {0, 0}); // Moving left from origin is a no-op.
+    verify_cursor<edit::CursorLeft>(bus, buffer, 3, {0, 2}, {0, 1}); // Moving left from a deleted character.
+    verify_cursor<edit::CursorLeft>(bus, buffer, 4, {0, 2}, {0, 1}); // Moving left over a deleted character.
 }
 
 TEST(BufferComponentTests, CursorRight_WorksAsExpected)
@@ -156,30 +103,10 @@ TEST(BufferComponentTests, CursorRight_WorksAsExpected)
         {.ch = 'l', .is_deleted = true },
         {.ch = 'o', .is_deleted = false},
     };
-    edit::ActionBus bus;
-    edit::BufferComponent buf{bus, std::move(chars)};
-
-    // Moving right normally.
-    buf.set_cursor_index(0);
-    checkpos(buf.get_cursor_position(), std::make_pair(0, 0));
-    bus.publish(edit::Action{edit::CursorRight{}});
-    checkpos(buf.get_cursor_position(), std::make_pair(0, 1));
-
-    // Moving right from `EOF` doesn't do anything.
-    buf.set_cursor_index(5);
-    checkpos(buf.get_cursor_position(), std::make_pair(0, 3));
-    bus.publish(edit::Action{edit::CursorRight{}});
-    checkpos(buf.get_cursor_position(), std::make_pair(0, 3));
-
-    // Moving right from a deleted character.
-    buf.set_cursor_index(2);
-    checkpos(buf.get_cursor_position(), std::make_pair(0, 2));
-    bus.publish(edit::Action{edit::CursorRight{}});
-    checkpos(buf.get_cursor_position(), std::make_pair(0, 3));
-
-    // Moving right over a deleted character.
-    buf.set_cursor_index(1);
-    checkpos(buf.get_cursor_position(), std::make_pair(0, 1));
-    bus.publish(edit::Action{edit::CursorRight{}});
-    checkpos(buf.get_cursor_position(), std::make_pair(0, 2));
+    ActionBus bus;
+    BufferComponent buffer{bus, std::move(chars)};
+    verify_cursor<edit::CursorRight>(bus, buffer, 0, {0, 0}, {0, 1}); // Moving right normally.
+    verify_cursor<edit::CursorRight>(bus, buffer, 5, {0, 3}, {0, 3}); // Moving right from `EOF` is a no-op.
+    verify_cursor<edit::CursorRight>(bus, buffer, 2, {0, 2}, {0, 3}); // Moving right from a deleted character.
+    verify_cursor<edit::CursorRight>(bus, buffer, 1, {0, 1}, {0, 2}); // Moving right over a deleted character.
 }

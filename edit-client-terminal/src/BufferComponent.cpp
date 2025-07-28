@@ -25,115 +25,96 @@ void edit::BufferComponent::init(ActionBus &action_bus)
     calculate_lines();
 }
 
-int edit::BufferComponent::site() const
-{
-    return site_;
-}
-
 void edit::BufferComponent::set_cursor_index(std::size_t index)
 {
     cursor_ = std::min(index, buffer_.size());
 }
 
-std::size_t edit::BufferComponent::get_cursor_index() const
+int edit::BufferComponent::site() const
 {
-    return cursor_;
+    return site_;
 }
 
 std::size_t edit::BufferComponent::get_cursor_y() const
 {
-    for (auto it = lines_.begin(); it < lines_.end(); it++)
-        if ((it->begin <= cursor_) && (cursor_ <= it->end))
-            return it - lines_.begin();
+    std::size_t l = 0;
+    std::size_t r = lines_.size();
+    while (l < r)
+    {
+        std::size_t m = l + (r - 1) / 2;
+        if (cursor_ < lines_[m].begin)
+        {
+            r = m;
+        }
+        else if (cursor_ > lines_[m].end)
+        {
+            l = m + 1;
+        }
+        else
+        {
+            return m;
+        }
+    }
+
     throw std::range_error("Cursor does not fall into valid line");
 }
 
 /**
- * @brief Return cursor position as a (y, x)-coordinate.
- * @return (y, x)-coordinate.
+ * @brief Return cursor position as a coordinate.
+ * @return Coordinate.
  */
-std::pair<std::size_t, std::size_t> edit::BufferComponent::get_cursor_position() const
+edit::Point edit::BufferComponent::get_cursor_position() const
 {
     auto y = get_cursor_y();
-    auto x = calculate_line_offset(lines_[y], cursor_);
-    return std::make_pair(y, x);
+    auto x = calculate_x(lines_[y], cursor_);
+    return edit::Point{y, x};
 }
 
 void edit::BufferComponent::handle_cursor_up()
 {
     auto y = get_cursor_y();
-    if (y > 0)
+    if (!is_y_at_top(y))
     {
-        auto x = calculate_line_offset(lines_[y], cursor_);
-        cursor_ = calculate_line_offset_add(lines_[y - 1], x);
+        auto x = calculate_x(lines_[y], cursor_);
+        cursor_ = calculate_x_index(lines_[y - 1], x);
     }
-
-    // TODO: Update camera up.
-    // TODO: Update camera horizontal.
 }
 
 void edit::BufferComponent::handle_cursor_down()
 {
     auto y = get_cursor_y();
-    if (y < lines_.size() - 1)
+    if (!is_y_at_bottom(y))
     {
-        auto x = calculate_line_offset(lines_[y], cursor_);
-        cursor_ = calculate_line_offset_add(lines_[y + 1], x);
+        auto x = calculate_x(lines_[y], cursor_);
+        cursor_ = calculate_x_index(lines_[y + 1], x);
     }
-
-    // TODO: Update camera down.
-    // TODO: Update camera horizontal.
 }
 
 void edit::BufferComponent::handle_cursor_left()
 {
-    if (cursor_ == 0)
-        return;
-
-    // TODO: Re-do this logic to move left from the cursor.
-    std::size_t best = 0;
-
-    // Move our cursor to the closest on-the-left visible character.
-    for (std::size_t i = 0; i < cursor_; i++)
-        if (!buffer_[i].is_deleted)
-            best = i;
-
-    cursor_ = best;
-
-    // TODO: Update camera left.
-    // TODO: Update camera up.
+    cursor_ = next_visible_before(cursor_);
 }
 
 void edit::BufferComponent::handle_cursor_right()
 {
     if (cursor_ >= buffer_.size())
-        return;
-
-    // 1. If our cursor is on a visible character, it is hovering over that character. Move to the next visible
-    //    character on-the-right.
-    // 2. If our cursor is not on a visible character, it is already hovering over the next visible character. This
-    //    means that we need to skip the first visible character we see on-the-right.
-    bool skip = buffer_[cursor_].is_deleted;
-    auto best = buffer_.size();
-    for (auto next = cursor_ + 1; next < buffer_.size(); next++)
     {
-        if (!buffer_[next].is_deleted)
-        {
-            if (skip)
-            {
-                skip = false;
-                continue;
-            }
-
-            best = next;
-            break;
-        }
+        return;
     }
 
-    cursor_ = best;
-
-    // TODO: Update camera right.
-    // TODO: Update camera down.
+    if (!buffer_[cursor_].is_deleted)
+    {
+        // If our cursor is on a visible character, it is hovering over that character. Move to the next visible
+        // character on the right.
+        cursor_ = next_visible_after(cursor_);
+    }
+    else
+    {
+        // If our cursor is on a deleted character, it is already hovering over the next visible character. This means
+        // that we need to skip the first visible character we see on the right.
+        cursor_ = next_visible_after(cursor_);
+        cursor_ = next_visible_after(cursor_);
+    }
 }
 
 /**
@@ -167,7 +148,7 @@ void edit::BufferComponent::calculate_lines()
  * @param index Character.
  * @return What `nth` visible character this is.
  */
-std::size_t edit::BufferComponent::calculate_line_offset(const Line &line, std::size_t index) const
+std::size_t edit::BufferComponent::calculate_x(const Line &line, std::size_t index) const
 {
     auto range_begin = buffer_.begin() + line.begin;
     auto range_end = buffer_.begin() + index;
@@ -180,11 +161,48 @@ std::size_t edit::BufferComponent::calculate_line_offset(const Line &line, std::
  * @param count `nth` visible character.
  * @return Index into buffer.
  */
-std::size_t edit::BufferComponent::calculate_line_offset_add(const Line &line, std::size_t count) const
+std::size_t edit::BufferComponent::calculate_x_index(const Line &line, std::size_t count) const
 {
     for (std::size_t i = line.begin; i < line.end; i++)
         if (!buffer_[i].is_deleted)
             if ((count--) == 0)
                 return i;
     return line.end;
+}
+
+/**
+ * @brief Find the index of the next visible character, before an index.
+ * @param index Index.
+ * @return Next index, or 0.
+ */
+std::size_t edit::BufferComponent::next_visible_before(std::size_t index) const
+{
+    if (index > 0)
+        for (auto i = index; (i--) > 0;)
+            if (!buffer_[i].is_deleted)
+                return i;
+    return 0;
+}
+
+/**
+ * @brief Find the index of the next visible character, after an index.
+ * @param index Index.
+ * @return Next index, or `buffer_.size()`.
+ */
+std::size_t edit::BufferComponent::next_visible_after(std::size_t index) const
+{
+    for (auto i = index + 1; i < buffer_.size(); i++)
+        if (!buffer_[i].is_deleted)
+            return i;
+    return buffer_.size();
+}
+
+bool edit::BufferComponent::is_y_at_top(std::size_t y) const
+{
+    return y == 0;
+}
+
+bool edit::BufferComponent::is_y_at_bottom(std::size_t y) const
+{
+    return y == lines_.size() - 1;
 }
