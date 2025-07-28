@@ -47,6 +47,7 @@ if(BUILD_TESTING)
     enable_testing()
 
     add_executable(edit-tests
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/BufferComponentTests.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/tests/BusTests.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/tests/EditorTests.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/tests/StatusComponentTests.cpp)

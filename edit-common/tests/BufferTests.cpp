@@ -58,7 +58,7 @@ TEST(BufferTests, Insert_ReturnsFalse_WhenCharAlreadyExists)
         {.parent_clock = 0,          .parent_site = 1,         .clock = 1, .site = 1},
         {.parent_clock = 1,          .parent_site = 1,         .clock = 2, .site = 1},
     });
-    for (const auto& ch : buffer)
+    for (const auto &ch : buffer)
         EXPECT_FALSE(buffer.insert(ch));
 }
 
@@ -119,4 +119,18 @@ TEST(BufferTests, Remove_ReturnsTrue)
         EXPECT_TRUE(buffer.remove(ch));
     for (const auto &ch : buffer)
         EXPECT_TRUE(ch.is_deleted);
+}
+
+TEST(BufferTests, Clock_WorksAsExpected)
+{
+    edit::common::Buffer buffer({
+        {.parent_clock = ROOT_CLOCK, .parent_site = ROOT_SITE, .clock = 0, .site = 1},
+        {.parent_clock = 0,          .parent_site = 1,         .clock = 1, .site = 1},
+        {.parent_clock = 1,          .parent_site = 1,         .clock = 2, .site = 1},
+    });
+    EXPECT_EQ(buffer.clock(), 2);
+    buffer.insert({.parent_clock = 2, .parent_site = 1, .clock = 3, .site = 1});
+    buffer.insert({.parent_clock = 3, .parent_site = 1, .clock = 4, .site = 1});
+    buffer.insert({.parent_clock = 4, .parent_site = 1, .clock = 5, .site = 1});
+    EXPECT_EQ(buffer.clock(), 5);
 }

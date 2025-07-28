@@ -1,24 +1,31 @@
 #include "edit-common/Buffer.hpp"
 #include <algorithm>
 
-edit::common::Buffer::Buffer() : data()
+edit::common::Buffer::Buffer() : data_(), clock_(0)
 {
 }
 
-edit::common::Buffer::Buffer(const std::vector<Char> &data) : data(data)
+edit::common::Buffer::Buffer(const std::vector<Char> &data) : data_(data), clock_(0)
 {
+    auto it = std::max_element(data_.begin(), data_.end(), [](auto &a, auto &b) { return a.clock < b.clock; });
+    if (it < data_.end())
+        clock_ = it->clock;
 }
 
-edit::common::Buffer::Buffer(std::vector<Char> &&data) : data(std::move(data))
+edit::common::Buffer::Buffer(std::vector<Char> &&data) : data_(std::move(data)), clock_(0)
 {
+    auto it = std::max_element(data_.begin(), data_.end(), [](auto &a, auto &b) { return a.clock < b.clock; });
+    if (it < data_.end())
+        clock_ = it->clock;
 }
 
 bool edit::common::Buffer::insert(const Char &ch)
 {
-    if (edit::common::find(data, ch) == -1)
+    clock_ = std::max(clock_, ch.clock);
+    if (edit::common::find(data_, ch) == -1)
     {
-        int i = edit::common::find_sorted_position(data, ch);
-        data.insert(data.begin() + i, ch);
+        int i = edit::common::find_sorted_position(data_, ch);
+        data_.insert(data_.begin() + i, ch);
         return true;
     }
     else
@@ -29,10 +36,11 @@ bool edit::common::Buffer::insert(const Char &ch)
 
 bool edit::common::Buffer::remove(const Char &ch)
 {
-    int i = edit::common::find(data, ch);
-    if ((i >= 0) && !data[i].is_deleted)
+    clock_ = std::max(clock_, ch.clock);
+    int i = edit::common::find(data_, ch);
+    if ((i >= 0) && !data_[i].is_deleted)
     {
-        data[i].is_deleted = true;
+        data_[i].is_deleted = true;
         return true;
     }
     else
@@ -41,24 +49,39 @@ bool edit::common::Buffer::remove(const Char &ch)
     }
 }
 
+int edit::common::Buffer::clock() const
+{
+    return clock_;
+}
+
+std::size_t edit::common::Buffer::size() const
+{
+    return data_.size();
+}
+
 std::vector<edit::common::Char>::iterator edit::common::Buffer::begin()
 {
-    return data.begin();
+    return data_.begin();
 }
 
 std::vector<edit::common::Char>::iterator edit::common::Buffer::end()
 {
-    return data.end();
+    return data_.end();
 }
 
 std::vector<edit::common::Char>::const_iterator edit::common::Buffer::begin() const
 {
-    return data.begin();
+    return data_.begin();
 }
 
 std::vector<edit::common::Char>::const_iterator edit::common::Buffer::end() const
 {
-    return data.end();
+    return data_.end();
+}
+
+const edit::common::Char &edit::common::Buffer::operator[](std::size_t index) const
+{
+    return data_[index];
 }
 
 int edit::common::find(const std::vector<Char> &chars, const edit::common::Char &ch)
