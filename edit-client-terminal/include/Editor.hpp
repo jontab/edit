@@ -2,7 +2,7 @@
 
 #include "BufferComponent.hpp"
 #include "StatusComponent.hpp"
-#include "View.hpp"
+#include "ui/IView.hpp"
 #include <iostream>
 
 namespace edit
@@ -10,15 +10,15 @@ namespace edit
 
 class Editor
 {
-    std::unique_ptr<IView> view;
-    ActionBus action_bus;
-    EventBus event_bus;
-    BufferComponent buffer_component;
-    StatusComponent status_component;
-    bool is_running;
+    std::unique_ptr<ui::IView> view_;
+    ActionBus action_bus_;
+    EventBus event_bus_;
+    BufferComponent buffer_component_;
+    StatusComponent status_component_;
+    bool is_running_;
 
   public:
-    Editor(std::unique_ptr<IView> view);
+    Editor(std::unique_ptr<ui::IView> view);
 
     void run();
 };

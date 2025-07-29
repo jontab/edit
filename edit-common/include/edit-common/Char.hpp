@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 namespace edit::common
 {
 
@@ -9,7 +11,7 @@ struct Char
     int parent_site;
     int clock;
     int site;
-    char ch;
+    std::uint32_t ch; // Unicode.
     bool is_deleted;
 
     bool operator==(const Char &other) const;

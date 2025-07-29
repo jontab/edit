@@ -7,16 +7,16 @@ namespace edit
 
 class StatusComponent
 {
-    int display_cursor_index;
-    int display_cursor_y;
-    int display_cursor_x;
+    int display_cursor_index_;
+    int display_cursor_y_;
+    int display_cursor_x_;
 
   public:
     StatusComponent(EventBus &event_bus);
 
-    int get_display_cursor_y();
-    int get_display_cursor_x();
-    int get_display_cursor_index();
+    std::size_t get_display_cursor_y() const;
+    std::size_t get_display_cursor_x() const;
+    std::size_t get_display_cursor_index() const;
 
   private:
     void handle_cursor_moved(const CursorMoved &event);

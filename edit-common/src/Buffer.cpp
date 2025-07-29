@@ -79,6 +79,11 @@ std::vector<edit::common::Char>::const_iterator edit::common::Buffer::end() cons
     return data_.end();
 }
 
+edit::common::Char &edit::common::Buffer::operator[](std::size_t index)
+{
+    return data_[index];
+}
+
 const edit::common::Char &edit::common::Buffer::operator[](std::size_t index) const
 {
     return data_[index];

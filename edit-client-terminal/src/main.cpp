@@ -1,11 +1,12 @@
 #include "Editor.hpp"
+#include "ui/TermboxView.hpp"
 #include <exception>
 
 int main(int argc, char **argv)
 {
     try
     {
-        edit::Editor editor{std::make_unique<edit::DefaultView>()};
+        edit::Editor editor{std::make_unique<edit::ui::TermboxView>()};
         editor.run();
     }
     catch (const std::exception &error)

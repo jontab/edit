@@ -2,8 +2,9 @@
 #include <gtest/gtest.h>
 
 using ActionBus = edit::ActionBus;
+using EventBus = edit::EventBus;
 using BufferComponent = edit::BufferComponent;
-using Point = edit::Point;
+using Point = edit::ui::Point<std::size_t>;
 
 template <typename ActionType>
 void verify_cursor(ActionBus &bus, BufferComponent &buffer, std::size_t index, const Point &from, const Point &to)
@@ -18,8 +19,9 @@ TEST(BufferComponentTests, Site_IsRandom)
 {
     srand(1337);
     ActionBus bus;
-    BufferComponent a{bus};
-    BufferComponent b{bus};
+    EventBus evbus;
+    BufferComponent a{bus, evbus};
+    BufferComponent b{bus, evbus};
     EXPECT_NE(a.site(), b.site());
 }
 
@@ -43,7 +45,8 @@ TEST(BufferComponentTests, CursorUp_WorksAsExpected)
         {.ch = '!',  .is_deleted = false},
     };
     ActionBus bus;
-    BufferComponent buffer{bus, std::move(chars)};
+    EventBus evbus;
+    BufferComponent buffer{bus, evbus, std::move(chars)};
     verify_cursor<edit::CursorUp>(bus, buffer, 7, {1, 0}, {0, 0});  // Moving up normally.
     verify_cursor<edit::CursorUp>(bus, buffer, 0, {0, 0}, {0, 0});  // Moving up from first row is a no-op.
     verify_cursor<edit::CursorUp>(bus, buffer, 9, {1, 2}, {0, 2});  // Moving up from a deleted character.
@@ -70,7 +73,8 @@ TEST(BufferComponentTests, CursorDown_WorksAsExpected)
         {.ch = '!',  .is_deleted = false},
     };
     ActionBus bus;
-    BufferComponent buffer{bus, std::move(chars)};
+    EventBus evbus;
+    BufferComponent buffer{bus, evbus, std::move(chars)};
     verify_cursor<edit::CursorDown>(bus, buffer, 0, {0, 0}, {1, 0}); // Moving down normally.
     verify_cursor<edit::CursorDown>(bus, buffer, 9, {1, 0}, {1, 0}); // Moving down from final row is a no-op.
     verify_cursor<edit::CursorDown>(bus, buffer, 5, {0, 5}, {1, 5}); // Moving down from a deleted character.
@@ -87,7 +91,8 @@ TEST(BufferComponentTests, CursorLeft_WorksAsExpected)
         {.ch = 'o', .is_deleted = false},
     };
     ActionBus bus;
-    BufferComponent buffer{bus, std::move(chars)};
+    EventBus evbus;
+    BufferComponent buffer{bus, evbus, std::move(chars)};
     verify_cursor<edit::CursorLeft>(bus, buffer, 1, {0, 1}, {0, 0}); // Moving left normally.
     verify_cursor<edit::CursorLeft>(bus, buffer, 0, {0, 0}, {0, 0}); // Moving left from origin is a no-op.
     verify_cursor<edit::CursorLeft>(bus, buffer, 3, {0, 2}, {0, 1}); // Moving left from a deleted character.
@@ -104,7 +109,8 @@ TEST(BufferComponentTests, CursorRight_WorksAsExpected)
         {.ch = 'o', .is_deleted = false},
     };
     ActionBus bus;
-    BufferComponent buffer{bus, std::move(chars)};
+    EventBus evbus;
+    BufferComponent buffer{bus, evbus, std::move(chars)};
     verify_cursor<edit::CursorRight>(bus, buffer, 0, {0, 0}, {0, 1}); // Moving right normally.
     verify_cursor<edit::CursorRight>(bus, buffer, 5, {0, 3}, {0, 3}); // Moving right from `EOF` is a no-op.
     verify_cursor<edit::CursorRight>(bus, buffer, 2, {0, 2}, {0, 3}); // Moving right from a deleted character.

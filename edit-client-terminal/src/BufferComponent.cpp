@@ -1,17 +1,19 @@
 #include "BufferComponent.hpp"
 
-edit::BufferComponent::BufferComponent(ActionBus &action_bus) : BufferComponent(action_bus, {})
+edit::BufferComponent::BufferComponent(ActionBus &action_bus, EventBus &event_bus)
+    : BufferComponent(action_bus, event_bus, {})
 {
 }
 
-edit::BufferComponent::BufferComponent(ActionBus &action_bus, const std::vector<common::Char> &chars)
-    : buffer_(chars), lines_(), cursor_(0), site_(rand())
+edit::BufferComponent::BufferComponent(ActionBus &action_bus, EventBus &event_bus,
+                                       const std::vector<common::Char> &chars)
+    : event_bus_(event_bus), buffer_(chars), lines_(), cursor_(0), site_(rand())
 {
     init(action_bus);
 }
 
-edit::BufferComponent::BufferComponent(ActionBus &action_bus, std::vector<common::Char> &&chars)
-    : buffer_(std::move(chars)), lines_(), cursor_(0), site_(rand())
+edit::BufferComponent::BufferComponent(ActionBus &action_bus, EventBus &event_bus, std::vector<common::Char> &&chars)
+    : event_bus_(event_bus), buffer_(std::move(chars)), lines_(), cursor_(0), site_(rand())
 {
     init(action_bus);
 }
@@ -22,6 +24,9 @@ void edit::BufferComponent::init(ActionBus &action_bus)
     action_bus.on<CursorDown>([this](const auto &) { handle_cursor_down(); });
     action_bus.on<CursorLeft>([this](const auto &) { handle_cursor_left(); });
     action_bus.on<CursorRight>([this](const auto &) { handle_cursor_right(); });
+    action_bus.on<Insert>([this](const auto &ev) { handle_insert(ev); });
+    action_bus.on<Delete>([this](const auto &) { handle_delete(); });
+    action_bus.on<Backspace>([this](const auto &) { handle_backspace(); });
     calculate_lines();
 }
 
@@ -38,13 +43,13 @@ int edit::BufferComponent::site() const
 std::size_t edit::BufferComponent::get_cursor_y() const
 {
     std::size_t l = 0;
-    std::size_t r = lines_.size();
-    while (l < r)
+    std::size_t r = lines_.size() - 1;
+    while (l <= r)
     {
-        std::size_t m = l + (r - 1) / 2;
+        std::size_t m = (l + r) / 2;
         if (cursor_ < lines_[m].begin)
         {
-            r = m;
+            r = m - 1;
         }
         else if (cursor_ > lines_[m].end)
         {
@@ -63,11 +68,52 @@ std::size_t edit::BufferComponent::get_cursor_y() const
  * @brief Return cursor position as a coordinate.
  * @return Coordinate.
  */
-edit::Point edit::BufferComponent::get_cursor_position() const
+edit::ui::Point<std::size_t> edit::BufferComponent::get_cursor_position() const
 {
     auto y = get_cursor_y();
     auto x = calculate_x(lines_[y], cursor_);
-    return edit::Point{y, x};
+    return edit::ui::Point<std::size_t>{y, x};
+}
+
+std::size_t edit::BufferComponent::line_count() const
+{
+    return lines_.size();
+}
+
+std::size_t edit::BufferComponent::line_length(std::size_t y) const
+{
+    if (y < lines_.size())
+    {
+        return lines_[y].end - lines_[y].begin;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+std::vector<edit::common::Char>::const_iterator edit::BufferComponent::line_begin(std::size_t y) const
+{
+    if (y < lines_.size())
+    {
+        return buffer_.begin() + lines_[y].begin;
+    }
+    else
+    {
+        return buffer_.end();
+    }
+}
+
+std::vector<edit::common::Char>::const_iterator edit::BufferComponent::line_end(std::size_t y) const
+{
+    if (y < lines_.size())
+    {
+        return buffer_.begin() + lines_[y].end;
+    }
+    else
+    {
+        return buffer_.end();
+    }
 }
 
 void edit::BufferComponent::handle_cursor_up()
@@ -78,6 +124,12 @@ void edit::BufferComponent::handle_cursor_up()
         auto x = calculate_x(lines_[y], cursor_);
         cursor_ = calculate_x_index(lines_[y - 1], x);
     }
+
+    event_bus_.publish(edit::CursorMoved{
+        .new_index = cursor_,
+        .new_y = get_cursor_position().y,
+        .new_x = get_cursor_position().x,
+    });
 }
 
 void edit::BufferComponent::handle_cursor_down()
@@ -88,11 +140,23 @@ void edit::BufferComponent::handle_cursor_down()
         auto x = calculate_x(lines_[y], cursor_);
         cursor_ = calculate_x_index(lines_[y + 1], x);
     }
+
+    event_bus_.publish(edit::CursorMoved{
+        .new_index = cursor_,
+        .new_y = get_cursor_position().y,
+        .new_x = get_cursor_position().x,
+    });
 }
 
 void edit::BufferComponent::handle_cursor_left()
 {
     cursor_ = next_visible_before(cursor_);
+
+    event_bus_.publish(edit::CursorMoved{
+        .new_index = cursor_,
+        .new_y = get_cursor_position().y,
+        .new_x = get_cursor_position().x,
+    });
 }
 
 void edit::BufferComponent::handle_cursor_right()
@@ -114,6 +178,64 @@ void edit::BufferComponent::handle_cursor_right()
         // that we need to skip the first visible character we see on the right.
         cursor_ = next_visible_after(cursor_);
         cursor_ = next_visible_after(cursor_);
+    }
+
+    event_bus_.publish(edit::CursorMoved{
+        .new_index = cursor_,
+        .new_y = get_cursor_position().y,
+        .new_x = get_cursor_position().x,
+    });
+}
+
+void edit::BufferComponent::handle_insert(const Insert &action)
+{
+    int parent_clock = 0;
+    int parent_site = -1;
+    if (cursor_ > 0)
+    {
+        parent_clock = buffer_[cursor_ - 1].clock;
+        parent_site = buffer_[cursor_ - 1].site;
+    }
+
+    buffer_.insert(edit::common::Char{
+        .parent_clock = parent_clock,
+        .parent_site = parent_site,
+        .clock = buffer_.clock() + 1,
+        .site = site_,
+        .ch = action.ch,
+        .is_deleted = false,
+    });
+    calculate_lines();
+}
+
+void edit::BufferComponent::handle_delete()
+{
+    if (cursor_ >= buffer_.size())
+    {
+        return;
+    }
+
+    if (buffer_[cursor_].is_deleted)
+    {
+        if (auto i = next_visible_after(cursor_); i < buffer_.size())
+        {
+            buffer_[i].is_deleted = true;
+            calculate_lines();
+        }
+    }
+    else
+    {
+        buffer_[cursor_].is_deleted = true;
+        calculate_lines();
+    }
+}
+
+void edit::BufferComponent::handle_backspace()
+{
+    if (cursor_ > 0)
+    {
+        handle_cursor_left();
+        handle_delete();
     }
 }
 

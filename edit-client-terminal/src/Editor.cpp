@@ -1,20 +1,17 @@
 #include "Editor.hpp"
 
-edit::Editor::Editor(std::unique_ptr<IView> view)
-    : view(std::move(view)), action_bus(), event_bus(), buffer_component(this->action_bus),
-      status_component(this->event_bus), is_running(true)
+edit::Editor::Editor(std::unique_ptr<edit::ui::IView> view)
+    : view_(std::move(view)), action_bus_(), event_bus_(), buffer_component_(this->action_bus_, this->event_bus_),
+      status_component_(this->event_bus_), is_running_(true)
 {
-    action_bus.on<Quit>([this](const auto &) { is_running = false; });
+    action_bus_.on<Quit>([this](const auto &) { is_running_ = false; });
 }
 
 void edit::Editor::run()
 {
-    while (is_running)
+    while (is_running_)
     {
-        view->render(this->buffer_component, this->status_component);
-        if (auto action = view->poll(); action.has_value())
-        {
-            this->action_bus.publish(action.value());
-        }
+        view_->render(this->buffer_component_, this->status_component_);
+        view_->poll(action_bus_);
     }
 }

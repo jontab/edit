@@ -7,9 +7,9 @@ namespace edit
 
 struct CursorMoved
 {
-    int new_index;
-    int new_y;
-    int new_x;
+    std::size_t new_index;
+    std::size_t new_y;
+    std::size_t new_x;
 };
 
 using Event = std::variant<CursorMoved>;

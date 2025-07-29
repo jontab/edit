@@ -1,29 +1,29 @@
 #include "StatusComponent.hpp"
 
 edit::StatusComponent::StatusComponent(EventBus &event_bus)
-    : display_cursor_index(), display_cursor_y(), display_cursor_x()
+    : display_cursor_index_(), display_cursor_y_(), display_cursor_x_()
 {
     event_bus.on<CursorMoved>([this](const auto &ev) { handle_cursor_moved(ev); });
 }
 
-int edit::StatusComponent::get_display_cursor_index()
+std::size_t edit::StatusComponent::get_display_cursor_index() const
 {
-    return display_cursor_index;
+    return display_cursor_index_;
 }
 
-int edit::StatusComponent::get_display_cursor_y()
+std::size_t edit::StatusComponent::get_display_cursor_y() const
 {
-    return display_cursor_y;
+    return display_cursor_y_;
 }
 
-int edit::StatusComponent::get_display_cursor_x()
+std::size_t edit::StatusComponent::get_display_cursor_x() const
 {
-    return display_cursor_x;
+    return display_cursor_x_;
 }
 
 void edit::StatusComponent::handle_cursor_moved(const CursorMoved &event)
 {
-    display_cursor_index = event.new_index;
-    display_cursor_y = event.new_y;
-    display_cursor_x = event.new_x;
+    display_cursor_index_ = event.new_index;
+    display_cursor_y_ = event.new_y;
+    display_cursor_x_ = event.new_x;
 }

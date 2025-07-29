@@ -25,6 +25,7 @@ class Buffer
     std::vector<Char>::iterator end();
     std::vector<Char>::const_iterator begin() const;
     std::vector<Char>::const_iterator end() const;
+    Char &operator[](std::size_t index);
     const Char &operator[](std::size_t index) const;
 };
 

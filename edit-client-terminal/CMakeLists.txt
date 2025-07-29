@@ -20,11 +20,14 @@ target_include_directories(termbox2 INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/../dep
 ################################################################################
 
 add_library(edit-client-terminal
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ui/BufferView.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ui/LayoutEngine.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ui/StatusView.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ui/TermboxBackend.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ui/TermboxView.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/BufferComponent.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Editor.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Point.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/StatusComponent.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/View.cpp)
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/StatusComponent.cpp)
 
 target_include_directories(edit-client-terminal PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
