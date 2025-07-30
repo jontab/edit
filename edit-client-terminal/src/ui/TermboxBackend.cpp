@@ -74,8 +74,14 @@ unsigned int TermboxBackend::width()
 void TermboxBackend::poll(ActionBus &action_bus, const std::function<void(unsigned int, unsigned int)> &on_resize)
 {
     struct tb_event ev;
-    if (tb_poll_event(&ev) == TB_ERR)
-        throw std::runtime_error("tb_poll_event failed");
+    switch (tb_peek_event(&ev, 50))
+    {
+    case TB_OK:
+        break;
+    default:
+        return;
+    }
+
     switch (ev.type)
     {
     case TB_EVENT_KEY:

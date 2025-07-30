@@ -13,12 +13,18 @@ target_include_directories(termbox2 INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/../dep
 # edit-client-terminal                                                         #
 ################################################################################
 
+find_package(Boost REQUIRED COMPONENTS system)
+find_package(OpenSSL REQUIRED)
+
 add_library(edit-client-terminal-lib
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/net/BeastNetworkComponent.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/net/BeastNetworkConnector.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ui/BufferView.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ui/LayoutEngine.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ui/StatusView.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ui/TermboxBackend.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ui/TermboxView.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Args.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/BufferComponent.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Editor.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/StatusComponent.cpp)
@@ -27,7 +33,13 @@ target_include_directories(edit-client-terminal-lib PUBLIC ${CMAKE_CURRENT_SOURC
 
 target_compile_options(edit-client-terminal-lib PRIVATE -Wall -Werror)
 
-target_link_libraries(edit-client-terminal-lib PUBLIC edit-common termbox2)
+target_link_libraries(edit-client-terminal-lib
+    PUBLIC
+    edit-common
+    termbox2
+    Boost::system
+    OpenSSL::SSL
+    OpenSSL::Crypto)
 
 ################################################################################
 # edit                                                                         #

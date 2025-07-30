@@ -21,7 +21,7 @@ jobs:
     - name: setup-runner
       run: |
         sudo apt-get update
-        sudo apt-get install -y cmake build-essential git zlib1g-dev
+        sudo apt-get install -y cmake build-essential git zlib1g-dev libboost-all-dev libssl-dev
 
     - name: setup-runner-docker
       uses: docker/setup-buildx-action@v3
