@@ -1,5 +1,8 @@
 #pragma once
 
+#include <cstddef>
+#include <unordered_map>
+
 namespace edit::ui
 {
 
@@ -20,3 +23,11 @@ template <typename T> struct Point
 };
 
 } // namespace edit::ui
+
+template <typename T> struct std::hash<edit::ui::Point<T>>
+{
+    std::size_t operator()(const edit::ui::Point<T> &point) const
+    {
+        return std::hash<unsigned int>()(point.y) ^ (std::hash<unsigned int>()(point.x) << 1);
+    }
+};

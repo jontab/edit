@@ -8,8 +8,6 @@ on:
 
 env:
   BUILD_DIR: ${{ github.workspace }}/build
-  BUILD_DIR_CLIENT_TERMINAL: $BUILD_DIR/edit-client-terminal
-  BUILD_DIR_COMMON: $BUILD_DIR/edit-common
 
 jobs:
   build-and-test:
@@ -36,25 +34,15 @@ jobs:
 # build                                                                        #
 ################################################################################
 
-    - name: build-edit-client-terminal
-      run: |
-        cmake -S edit-client-terminal -B $BUILD_DIR_CLIENT_TERMINAL
-        make -C $BUILD_DIR_CLIENT_TERMINAL
-
-    - name: build-edit-common
-      run: |
-        cmake -S edit-common -B $BUILD_DIR_COMMON
-        make -C $BUILD_DIR_COMMON
-
-    - name: build-edit-server
-      run: docker build . -t test-image:latest
+    - name: build
+      run: cmake -S . -B $BUILD_DIR && make -C $BUILD_DIR
 
 ################################################################################
 # test                                                                         #
 ################################################################################
 
     - name: run-edit-client-terminal-tests
-      run: $BUILD_DIR_CLIENT_TERMINAL/edit-tests
+      run: $BUILD_DIR/edit-client-terminal/edit-client-terminal-tests
 
     - name: run-edit-common-tests
-      run: $BUILD_DIR_COMMON/edit-common-tests
+      run: $BUILD_DIR/edit-common/edit-common-tests

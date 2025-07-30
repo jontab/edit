@@ -1,3 +1,6 @@
+cmake_minimum_required(VERSION 3.22)
+project(edit LANGUAGES CXX)
+
 include(FetchContent)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -13,4 +16,10 @@ if(BUILD_TESTING)
     )
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
     FetchContent_MakeAvailable(googletest)
+
+    include(GoogleTest)
 endif()
+
+add_subdirectory(edit-common)
+add_subdirectory(edit-client-terminal)
+add_subdirectory(edit-server)

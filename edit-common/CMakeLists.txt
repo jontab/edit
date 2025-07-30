@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.22)
 project(edit-common LANGUAGES CXX)
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/../common.cmake)
-
 ################################################################################
 # edit-common                                                                 #
 ################################################################################
@@ -30,6 +28,5 @@ if(BUILD_TESTING)
         edit-common
         GTest::gtest_main)
 
-    include(GoogleTest)
     gtest_discover_tests(edit-common-tests)
 endif()
