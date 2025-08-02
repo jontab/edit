@@ -1,18 +1,24 @@
 #include "edit-common/Buffer.hpp"
 #include <algorithm>
 
-edit::common::Buffer::Buffer() : data_(), clock_(0)
+edit::common::Buffer::Buffer()
+    : data_()
+    , clock_(0)
 {
 }
 
-edit::common::Buffer::Buffer(const std::vector<Char> &data) : data_(data), clock_(0)
+edit::common::Buffer::Buffer(const std::vector<Char> &data)
+    : data_(data)
+    , clock_(0)
 {
     auto it = std::max_element(data_.begin(), data_.end(), [](auto &a, auto &b) { return a.clock < b.clock; });
     if (it < data_.end())
         clock_ = it->clock;
 }
 
-edit::common::Buffer::Buffer(std::vector<Char> &&data) : data_(std::move(data)), clock_(0)
+edit::common::Buffer::Buffer(std::vector<Char> &&data)
+    : data_(std::move(data))
+    , clock_(0)
 {
     auto it = std::max_element(data_.begin(), data_.end(), [](auto &a, auto &b) { return a.clock < b.clock; });
     if (it < data_.end())
@@ -134,4 +140,16 @@ int edit::common::find_sorted_position(const std::vector<Char> &chars, const edi
     }
 
     return i;
+}
+
+void edit::common::to_json(nlohmann::json &j, const Buffer &buffer)
+{
+    j = {
+        {"data", buffer.data_}
+    };
+}
+
+void edit::common::from_json(const nlohmann::json &j, Buffer &buffer)
+{
+    buffer = {j.at("data").get<std::vector<Char>>()};
 }

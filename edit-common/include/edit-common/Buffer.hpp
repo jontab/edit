@@ -27,9 +27,15 @@ class Buffer
     std::vector<Char>::const_iterator end() const;
     Char &operator[](std::size_t index);
     const Char &operator[](std::size_t index) const;
+
+    friend void to_json(nlohmann::json &j, const Buffer &buffer);
+    friend void from_json(const nlohmann::json &j, Buffer &buffer);
+
 };
 
 int find(const std::vector<Char> &chars, const Char &ch);
 int find_sorted_position(const std::vector<Char> &chars, const Char &ch);
+void to_json(nlohmann::json &j, const Buffer &buffer);
+void from_json(const nlohmann::json &j, Buffer &buffer);
 
 } // namespace edit::common

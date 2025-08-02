@@ -1,5 +1,6 @@
 #pragma once
 
+#include <nlohmann/json.hpp>
 #include <cstdint>
 
 namespace edit::common
@@ -17,5 +18,8 @@ struct Char
     bool operator==(const Char &other) const;
     bool operator!=(const Char &other) const;
 };
+
+void to_json(nlohmann::json &j, const Char &ch);
+void from_json(const nlohmann::json &j, Char &ch);
 
 } // namespace edit::common

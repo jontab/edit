@@ -134,3 +134,35 @@ TEST(BufferTests, Clock_WorksAsExpected)
     buffer.insert({.parent_clock = 4, .parent_site = 1, .clock = 5, .site = 1});
     EXPECT_EQ(buffer.clock(), 5);
 }
+
+TEST(BufferTests, Buffer_SerializeToJson)
+{
+    // Arrange.
+    edit::common::Buffer buffer({
+        {.parent_clock = ROOT_CLOCK, .parent_site = ROOT_SITE, .clock = 9, .site = 1},
+    });
+
+    // Act.
+    nlohmann::json j = buffer;
+
+    // Assert.
+    EXPECT_EQ(j.dump(), "{\"data\":[{\"c\":9,\"ch\":0,\"d\":false,\"pc\":0,\"ps\":-1,\"s\":1}]}");
+}
+
+TEST(BufferTests, Buffer_DeserializeFromJson)
+{
+    // Arrange & Act.
+    nlohmann::json j = nlohmann::json::parse("{\"data\":[{\"c\":9,\"ch\":0,\"d\":false,\"pc\":0,\"ps\":-1,\"s\":1}]}");
+    auto buffer = j.get<edit::common::Buffer>();
+
+    // Assert.
+    EXPECT_EQ(buffer.clock(), 9);
+
+    auto ch = *(buffer.begin() + 0);
+    EXPECT_EQ(ch.parent_clock, ROOT_CLOCK);
+    EXPECT_EQ(ch.parent_site, ROOT_SITE);
+    EXPECT_EQ(ch.clock, 9);
+    EXPECT_EQ(ch.site, 1);
+    EXPECT_EQ(ch.ch, '\0');
+    EXPECT_EQ(ch.is_deleted, false);
+}

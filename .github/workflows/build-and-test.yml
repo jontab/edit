@@ -41,8 +41,8 @@ jobs:
 # test                                                                         #
 ################################################################################
 
-    - name: run-edit-client-terminal-tests
-      run: $BUILD_DIR/edit-client-terminal/edit-client-terminal-tests
-
-    - name: run-edit-common-tests
-      run: $BUILD_DIR/edit-common/edit-common-tests
+    - name: run-tests
+      run: |
+        $BUILD_DIR/edit-client-terminal/edit-client-terminal-tests
+        $BUILD_DIR/edit-common/edit-common-tests
+        $BUILD_DIR/edit-server/edit-server-tests
