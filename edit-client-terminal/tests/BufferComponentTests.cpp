@@ -18,10 +18,12 @@ void verify_cursor(ActionBus &bus, BufferComponent &buffer, std::size_t index, c
 TEST(BufferComponentTests, Site_IsRandom)
 {
     srand(1337);
-    ActionBus bus;
+    ActionBus acbus;
     EventBus evbus;
-    BufferComponent a{bus, evbus};
-    BufferComponent b{bus, evbus};
+    edit::ModeComponent mode{acbus, evbus};
+    acbus.publish(edit::ChangeModeAction{edit::Mode::InsertMode});
+    BufferComponent a{acbus, evbus, mode};
+    BufferComponent b{acbus, evbus, mode};
     EXPECT_NE(a.site(), b.site());
 }
 
@@ -44,13 +46,15 @@ TEST(BufferComponentTests, CursorUp_WorksAsExpected)
         {.ch = '!',  .is_deleted = false},
         {.ch = '!',  .is_deleted = false},
     };
-    ActionBus bus;
+    ActionBus acbus;
     EventBus evbus;
-    BufferComponent buffer{bus, evbus, std::move(chars)};
-    verify_cursor<edit::CursorUp>(bus, buffer, 7, {1, 0}, {0, 0});  // Moving up normally.
-    verify_cursor<edit::CursorUp>(bus, buffer, 0, {0, 0}, {0, 0});  // Moving up from first row is a no-op.
-    verify_cursor<edit::CursorUp>(bus, buffer, 9, {1, 2}, {0, 2});  // Moving up from a deleted character.
-    verify_cursor<edit::CursorUp>(bus, buffer, 15, {1, 7}, {0, 6}); // Moving up from a longer row clamps.
+    edit::ModeComponent mode{acbus, evbus};
+    acbus.publish(edit::ChangeModeAction{edit::Mode::InsertMode});
+    BufferComponent buffer{acbus, evbus, mode, std::move(chars)};
+    verify_cursor<edit::CursorUpAction>(acbus, buffer, 7, {1, 0}, {0, 0});  // Moving up normally.
+    verify_cursor<edit::CursorUpAction>(acbus, buffer, 0, {0, 0}, {0, 0});  // Moving up from first row is a no-op.
+    verify_cursor<edit::CursorUpAction>(acbus, buffer, 9, {1, 2}, {0, 2});  // Moving up from a deleted character.
+    verify_cursor<edit::CursorUpAction>(acbus, buffer, 15, {1, 7}, {0, 6}); // Moving up from a longer row clamps.
 }
 
 TEST(BufferComponentTests, CursorDown_WorksAsExpected)
@@ -72,13 +76,15 @@ TEST(BufferComponentTests, CursorDown_WorksAsExpected)
         {.ch = 'd',  .is_deleted = false},
         {.ch = '!',  .is_deleted = false},
     };
-    ActionBus bus;
+    ActionBus acbus;
     EventBus evbus;
-    BufferComponent buffer{bus, evbus, std::move(chars)};
-    verify_cursor<edit::CursorDown>(bus, buffer, 0, {0, 0}, {1, 0}); // Moving down normally.
-    verify_cursor<edit::CursorDown>(bus, buffer, 9, {1, 0}, {1, 0}); // Moving down from final row is a no-op.
-    verify_cursor<edit::CursorDown>(bus, buffer, 5, {0, 5}, {1, 5}); // Moving down from a deleted character.
-    verify_cursor<edit::CursorDown>(bus, buffer, 8, {0, 7}, {1, 6}); // Moving down from a longer row clamps.
+    edit::ModeComponent mode{acbus, evbus};
+    acbus.publish(edit::ChangeModeAction{edit::Mode::InsertMode});
+    BufferComponent buffer{acbus, evbus, mode, std::move(chars)};
+    verify_cursor<edit::CursorDownAction>(acbus, buffer, 0, {0, 0}, {1, 0}); // Moving down normally.
+    verify_cursor<edit::CursorDownAction>(acbus, buffer, 9, {1, 0}, {1, 0}); // Moving down from final row is a no-op.
+    verify_cursor<edit::CursorDownAction>(acbus, buffer, 5, {0, 5}, {1, 5}); // Moving down from a deleted character.
+    verify_cursor<edit::CursorDownAction>(acbus, buffer, 8, {0, 7}, {1, 6}); // Moving down from a longer row clamps.
 }
 
 TEST(BufferComponentTests, CursorLeft_WorksAsExpected)
@@ -90,13 +96,15 @@ TEST(BufferComponentTests, CursorLeft_WorksAsExpected)
         {.ch = 'l', .is_deleted = true },
         {.ch = 'o', .is_deleted = false},
     };
-    ActionBus bus;
+    ActionBus acbus;
     EventBus evbus;
-    BufferComponent buffer{bus, evbus, std::move(chars)};
-    verify_cursor<edit::CursorLeft>(bus, buffer, 1, {0, 1}, {0, 0}); // Moving left normally.
-    verify_cursor<edit::CursorLeft>(bus, buffer, 0, {0, 0}, {0, 0}); // Moving left from origin is a no-op.
-    verify_cursor<edit::CursorLeft>(bus, buffer, 3, {0, 2}, {0, 1}); // Moving left from a deleted character.
-    verify_cursor<edit::CursorLeft>(bus, buffer, 4, {0, 2}, {0, 1}); // Moving left over a deleted character.
+    edit::ModeComponent mode{acbus, evbus};
+    acbus.publish(edit::ChangeModeAction{edit::Mode::InsertMode});
+    BufferComponent buffer{acbus, evbus, mode, std::move(chars)};
+    verify_cursor<edit::CursorLeftAction>(acbus, buffer, 1, {0, 1}, {0, 0}); // Moving left normally.
+    verify_cursor<edit::CursorLeftAction>(acbus, buffer, 0, {0, 0}, {0, 0}); // Moving left from origin is a no-op.
+    verify_cursor<edit::CursorLeftAction>(acbus, buffer, 3, {0, 2}, {0, 1}); // Moving left from a deleted character.
+    verify_cursor<edit::CursorLeftAction>(acbus, buffer, 4, {0, 2}, {0, 1}); // Moving left over a deleted character.
 }
 
 TEST(BufferComponentTests, CursorRight_WorksAsExpected)
@@ -108,11 +116,13 @@ TEST(BufferComponentTests, CursorRight_WorksAsExpected)
         {.ch = 'l', .is_deleted = true },
         {.ch = 'o', .is_deleted = false},
     };
-    ActionBus bus;
+    ActionBus acbus;
     EventBus evbus;
-    BufferComponent buffer{bus, evbus, std::move(chars)};
-    verify_cursor<edit::CursorRight>(bus, buffer, 0, {0, 0}, {0, 1}); // Moving right normally.
-    verify_cursor<edit::CursorRight>(bus, buffer, 5, {0, 3}, {0, 3}); // Moving right from `EOF` is a no-op.
-    verify_cursor<edit::CursorRight>(bus, buffer, 2, {0, 2}, {0, 3}); // Moving right from a deleted character.
-    verify_cursor<edit::CursorRight>(bus, buffer, 1, {0, 1}, {0, 2}); // Moving right over a deleted character.
+    edit::ModeComponent mode{acbus, evbus};
+    acbus.publish(edit::ChangeModeAction{edit::Mode::InsertMode});
+    BufferComponent buffer{acbus, evbus, mode, std::move(chars)};
+    verify_cursor<edit::CursorRightAction>(acbus, buffer, 0, {0, 0}, {0, 1}); // Moving right normally.
+    verify_cursor<edit::CursorRightAction>(acbus, buffer, 5, {0, 3}, {0, 3}); // Moving right from `EOF` is a no-op.
+    verify_cursor<edit::CursorRightAction>(acbus, buffer, 2, {0, 2}, {0, 3}); // Moving right from a deleted character.
+    verify_cursor<edit::CursorRightAction>(acbus, buffer, 1, {0, 1}, {0, 2}); // Moving right over a deleted character.
 }

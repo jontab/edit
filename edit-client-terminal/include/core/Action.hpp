@@ -1,50 +1,112 @@
 #pragma once
 
+#include "Mode.hpp"
 #include <cstdint>
-#include <variant>
 #include <string>
+#include <variant>
 
 namespace edit
 {
 
-struct Quit
+/**
+ * @brief Request to quit the program.
+ */
+struct QuitAction
 {
 };
 
-struct Insert
-{
-    std::uint32_t ch;
-};
-
-struct Delete
+/**
+ * @brief Leave `InsertMode` or `CommandMode`.
+ */
+struct EscapeAction
 {
 };
 
-struct Backspace
-{
-};
-
-struct CursorUp
-{
-};
-
-struct CursorDown
-{
-};
-
-struct CursorLeft
-{
-};
-
-struct CursorRight
-{
-};
-
-struct Status
+/**
+ * @brief Attempt to invoke a command.
+ */
+struct CommandAction
 {
     std::string text;
 };
 
-using Action = std::variant<Quit, Insert, Delete, Backspace, CursorUp, CursorDown, CursorLeft, CursorRight, Status>;
+/**
+ * @brief Request to change `Mode`.
+ */
+struct ChangeModeAction
+{
+    Mode to;
+};
+
+/**
+ * @brief Request to change status.
+ */
+struct StatusAction
+{
+    std::string text;
+};
+
+/**
+ * @brief Request to insert a character.
+ */
+struct InsertAction
+{
+    std::uint32_t ch;
+};
+
+/**
+ * @brief Request to delete a character.
+ */
+struct DeleteAction
+{
+};
+
+/**
+ * @brief Request to backspace (move left and delete a character).
+ */
+struct BackspaceAction
+{
+};
+
+/**
+ * @brief Request to move up.
+ */
+struct CursorUpAction
+{
+};
+
+/**
+ * @brief Request to move down.
+ */
+struct CursorDownAction
+{
+};
+
+/**
+ * @brief Request to move to the left.
+ */
+struct CursorLeftAction
+{
+};
+
+/**
+ * @brief Request to move to the right.
+ */
+struct CursorRightAction
+{
+};
+
+using Action = std::variant<QuitAction, // Break.
+    EscapeAction,
+    CommandAction,
+    ChangeModeAction,
+    StatusAction,
+    InsertAction,
+    DeleteAction,
+    BackspaceAction,
+    CursorUpAction,
+    CursorDownAction,
+    CursorLeftAction,
+    CursorRightAction>;
 
 } // namespace edit

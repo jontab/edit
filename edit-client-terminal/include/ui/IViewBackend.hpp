@@ -24,7 +24,9 @@ class IViewBackend
     virtual void set_cursor(unsigned int y, unsigned int x) = 0;
     virtual unsigned int height() = 0;
     virtual unsigned int width() = 0;
-    virtual void poll(ActionBus &action_bus, const std::function<void(unsigned int, unsigned int)> &on_resize) = 0;
+    virtual void poll(ActionBus &action_bus,
+        EventBus &event_bus,
+        const std::function<void(unsigned int, unsigned int)> &on_resize) = 0;
 };
 
 } // namespace edit::ui

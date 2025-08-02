@@ -2,7 +2,8 @@
 
 using namespace edit::ui;
 
-BufferView::BufferView() : camera_({0, 0})
+BufferView::BufferView()
+    : camera_({0, 0})
 {
 }
 
@@ -94,11 +95,15 @@ void BufferView::render_cursor(IViewBackend &backend, const BufferComponent &buf
         }
     }
 
-    auto view_y = cursor.y - camera_.y;
-    auto view_x = ctx.view_x - camera_.x;
-    if ((view_y < static_cast<std::size_t>(bounds.size.y)) && (view_x < static_cast<std::size_t>(bounds.size.x)))
+    if ((buffer.mode() == Mode::InsertMode) || (buffer.mode() == Mode::NormalMode))
     {
-        backend.set_cursor(view_y + bounds.anchor.y, view_x + bounds.anchor.x);
+        // Cursor.
+        auto view_y = cursor.y - camera_.y;
+        auto view_x = ctx.view_x - camera_.x;
+        if ((view_y < static_cast<std::size_t>(bounds.size.y)) && (view_x < static_cast<std::size_t>(bounds.size.x)))
+        {
+            backend.set_cursor(view_y + bounds.anchor.y, view_x + bounds.anchor.x);
+        }
     }
 }
 

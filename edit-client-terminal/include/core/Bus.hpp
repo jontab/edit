@@ -50,9 +50,9 @@ template <typename Message> class Bus
         std::visit(
             [this](const auto &specific) {
                 // Q: What's the point of `std::decay_t`?
-                // A: `decltype(specific)` might return `const CursorUp &`. If we try to look that up in our subscribers
-                //    list, we're not going to find anything, because we registered the handlers to `CursorUp`. It takes
-                //    our `const CursorUp &` and turns it into `CursorUp`.
+                // A: `decltype(specific)` might return `const CursorUpAction &`. If we try to look that up in our
+                //    subscriberslist, we're not going to find anything, because we registered the handlers to
+                //    `CursorUpAction`. It takes our `const CursorUpAction &` and turns it into `CursorUpAction`.
                 using T = std::decay_t<decltype(specific)>;
                 auto it = subscribers.find(typeid(T));
                 if (it != subscribers.end())

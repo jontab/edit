@@ -1,14 +1,17 @@
 #include "components/BufferComponent.hpp"
 
-edit::BufferComponent::BufferComponent(ActionBus &action_bus, EventBus &event_bus)
-    : BufferComponent(action_bus, event_bus, {})
+edit::BufferComponent::BufferComponent(ActionBus &action_bus, EventBus &event_bus, ModeComponent &mode_component)
+    : BufferComponent(action_bus, event_bus, mode_component, {})
 {
 }
 
 edit::BufferComponent::BufferComponent(ActionBus &action_bus,
     EventBus &event_bus,
+    ModeComponent &mode_component,
     const std::vector<common::Char> &chars)
-    : event_bus_(event_bus)
+    : action_bus_(action_bus)
+    , event_bus_(event_bus)
+    , mode_component_(mode_component)
     , buffer_(chars)
     , lines_()
     , cursor_(0)
@@ -17,8 +20,13 @@ edit::BufferComponent::BufferComponent(ActionBus &action_bus,
     init(action_bus);
 }
 
-edit::BufferComponent::BufferComponent(ActionBus &action_bus, EventBus &event_bus, std::vector<common::Char> &&chars)
-    : event_bus_(event_bus)
+edit::BufferComponent::BufferComponent(ActionBus &action_bus,
+    EventBus &event_bus,
+    ModeComponent &mode_component,
+    std::vector<common::Char> &&chars)
+    : action_bus_(action_bus)
+    , event_bus_(event_bus)
+    , mode_component_(mode_component)
     , buffer_(std::move(chars))
     , lines_()
     , cursor_(0)
@@ -29,13 +37,14 @@ edit::BufferComponent::BufferComponent(ActionBus &action_bus, EventBus &event_bu
 
 void edit::BufferComponent::init(ActionBus &action_bus)
 {
-    action_bus.on<CursorUp>([this](const auto &) { handle_cursor_up(); });
-    action_bus.on<CursorDown>([this](const auto &) { handle_cursor_down(); });
-    action_bus.on<CursorLeft>([this](const auto &) { handle_cursor_left(); });
-    action_bus.on<CursorRight>([this](const auto &) { handle_cursor_right(); });
-    action_bus.on<Insert>([this](const auto &ev) { handle_insert(ev); });
-    action_bus.on<Delete>([this](const auto &) { handle_delete(); });
-    action_bus.on<Backspace>([this](const auto &) { handle_backspace(); });
+    action_bus.on<CursorUpAction>([this](const auto &) { handle_cursor_up(); });
+    action_bus.on<CursorDownAction>([this](const auto &) { handle_cursor_down(); });
+    action_bus.on<CursorLeftAction>([this](const auto &) { handle_cursor_left(); });
+    action_bus.on<CursorRightAction>([this](const auto &) { handle_cursor_right(); });
+    action_bus.on<InsertAction>([this](const auto &ev) { handle_insert(ev); });
+    action_bus.on<DeleteAction>([this](const auto &) { handle_delete(); });
+    action_bus.on<BackspaceAction>([this](const auto &) { handle_backspace(); });
+    action_bus.on<EscapeAction>([this](const auto &) { handle_escape(); });
     calculate_lines();
 }
 
@@ -125,8 +134,16 @@ std::vector<edit::common::Char>::const_iterator edit::BufferComponent::line_end(
     }
 }
 
+edit::Mode edit::BufferComponent::mode() const
+{
+    return mode_component_.mode();
+}
+
 void edit::BufferComponent::handle_cursor_up()
 {
+    if (mode_component_.mode() != Mode::InsertMode)
+        return;
+
     auto y = get_cursor_y();
     if (!is_y_at_top(y))
     {
@@ -134,7 +151,7 @@ void edit::BufferComponent::handle_cursor_up()
         cursor_ = calculate_x_index(lines_[y - 1], x);
     }
 
-    event_bus_.publish(edit::CursorMoved{
+    event_bus_.publish(edit::CursorMovedEvent{
         .new_index = cursor_,
         .new_y = get_cursor_position().y,
         .new_x = get_cursor_position().x,
@@ -143,6 +160,9 @@ void edit::BufferComponent::handle_cursor_up()
 
 void edit::BufferComponent::handle_cursor_down()
 {
+    if (mode_component_.mode() != Mode::InsertMode)
+        return;
+
     auto y = get_cursor_y();
     if (!is_y_at_bottom(y))
     {
@@ -150,7 +170,7 @@ void edit::BufferComponent::handle_cursor_down()
         cursor_ = calculate_x_index(lines_[y + 1], x);
     }
 
-    event_bus_.publish(edit::CursorMoved{
+    event_bus_.publish(edit::CursorMovedEvent{
         .new_index = cursor_,
         .new_y = get_cursor_position().y,
         .new_x = get_cursor_position().x,
@@ -159,9 +179,12 @@ void edit::BufferComponent::handle_cursor_down()
 
 void edit::BufferComponent::handle_cursor_left()
 {
+    if (mode_component_.mode() != Mode::InsertMode)
+        return;
+
     cursor_ = next_visible_before(cursor_);
 
-    event_bus_.publish(edit::CursorMoved{
+    event_bus_.publish(edit::CursorMovedEvent{
         .new_index = cursor_,
         .new_y = get_cursor_position().y,
         .new_x = get_cursor_position().x,
@@ -170,6 +193,9 @@ void edit::BufferComponent::handle_cursor_left()
 
 void edit::BufferComponent::handle_cursor_right()
 {
+    if (mode_component_.mode() != Mode::InsertMode)
+        return;
+
     if (cursor_ >= buffer_.size())
     {
         return;
@@ -189,15 +215,18 @@ void edit::BufferComponent::handle_cursor_right()
         cursor_ = next_visible_after(cursor_);
     }
 
-    event_bus_.publish(edit::CursorMoved{
+    event_bus_.publish(edit::CursorMovedEvent{
         .new_index = cursor_,
         .new_y = get_cursor_position().y,
         .new_x = get_cursor_position().x,
     });
 }
 
-void edit::BufferComponent::handle_insert(const Insert &action)
+void edit::BufferComponent::handle_insert(const InsertAction &action)
 {
+    if (mode_component_.mode() != Mode::InsertMode)
+        return;
+
     int parent_clock = 0;
     int parent_site = -1;
     if (cursor_ > 0)
@@ -216,11 +245,14 @@ void edit::BufferComponent::handle_insert(const Insert &action)
     };
     buffer_.insert(ch);
     calculate_lines();
-    event_bus_.publish(CharInserted{ch});
+    event_bus_.publish(CharInsertedEvent{ch});
 }
 
 void edit::BufferComponent::handle_delete()
 {
+    if (mode_component_.mode() != Mode::InsertMode)
+        return;
+
     if (cursor_ >= buffer_.size())
     {
         return;
@@ -243,11 +275,20 @@ void edit::BufferComponent::handle_delete()
 
 void edit::BufferComponent::handle_backspace()
 {
+    if (mode_component_.mode() != Mode::InsertMode)
+        return;
+
     if (cursor_ > 0)
     {
         handle_cursor_left();
         handle_delete();
     }
+}
+
+void edit::BufferComponent::handle_escape()
+{
+    if (mode_component_.mode() == Mode::InsertMode)
+        action_bus_.publish(edit::ChangeModeAction{Mode::NormalMode});
 }
 
 /**

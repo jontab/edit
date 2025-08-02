@@ -9,9 +9,9 @@ TermboxView::TermboxView()
 {
 }
 
-void TermboxView::poll(ActionBus &action_bus)
+void TermboxView::poll(ActionBus &action_bus, EventBus &event_bus)
 {
-    backend_->poll(action_bus, [this](auto height, auto width) { layout_.resize(height, width); });
+    backend_->poll(action_bus, event_bus, [this](auto height, auto width) { layout_.resize(height, width); });
 }
 
 void TermboxView::render(const BufferComponent &buffer, const StatusComponent &status)

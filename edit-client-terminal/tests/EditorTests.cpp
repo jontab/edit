@@ -6,7 +6,7 @@
 //   public:
 //     void poll(const std::function<void(edit::Action)> &on_action) override
 //     {
-//         on_action(edit::Quit{});
+//         on_action(edit::QuitAction{});
 //     }
 
 //     void render(const edit::BufferComponent &buffer, const edit::StatusComponent &status) override

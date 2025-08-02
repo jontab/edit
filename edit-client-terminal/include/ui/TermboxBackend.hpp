@@ -20,10 +20,12 @@ class TermboxBackend : public IViewBackend
     void set_cursor(unsigned int y, unsigned int x) override;
     unsigned int height() override;
     unsigned int width() override;
-    void poll(ActionBus &action_bus, const std::function<void(unsigned int, unsigned int)> &on_resize) override;
+    void poll(ActionBus &action_bus,
+        EventBus &event_bus,
+        const std::function<void(unsigned int, unsigned int)> &on_resize) override;
 
   private:
-    void on_key(const struct tb_event &ev, ActionBus &action_bus);
+    void on_key(const struct tb_event &ev, ActionBus &action_bus, EventBus &event_bus);
 };
 
 } // namespace edit::ui

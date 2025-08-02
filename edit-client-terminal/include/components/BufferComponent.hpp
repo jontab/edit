@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ModeComponent.hpp"
 #include "core/Bus.hpp"
 #include "core/Point.hpp"
 #include <edit-common/Buffer.hpp>
@@ -16,7 +17,11 @@ class BufferComponent
         std::size_t end;
     };
 
+    // Core.
+    ActionBus &action_bus_;
     EventBus &event_bus_;
+    ModeComponent &mode_component_;
+
     common::Buffer buffer_;
     std::vector<Line> lines_;
     std::size_t cursor_;
@@ -25,9 +30,15 @@ class BufferComponent
     void init(ActionBus &action_bus);
 
   public:
-    BufferComponent(ActionBus &action_bus, EventBus &event_bus);
-    BufferComponent(ActionBus &action_bus, EventBus &event_bus, const std::vector<common::Char> &chars);
-    BufferComponent(ActionBus &action_bus, EventBus &event_bus, std::vector<common::Char> &&chars);
+    BufferComponent(ActionBus &action_bus, EventBus &event_bus, ModeComponent &mode_component);
+    BufferComponent(ActionBus &action_bus,
+        EventBus &event_bus,
+        ModeComponent &mode_component,
+        const std::vector<common::Char> &chars);
+    BufferComponent(ActionBus &action_bus,
+        EventBus &event_bus,
+        ModeComponent &mode_component,
+        std::vector<common::Char> &&chars);
 
     void set_cursor_index(std::size_t index);
     int site() const;
@@ -37,15 +48,19 @@ class BufferComponent
     std::size_t line_length(std::size_t y) const;
     std::vector<common::Char>::const_iterator line_begin(std::size_t y) const;
     std::vector<common::Char>::const_iterator line_end(std::size_t y) const;
+    Mode mode() const;
 
   private:
+    // Actions.
     void handle_cursor_up();
     void handle_cursor_down();
     void handle_cursor_left();
     void handle_cursor_right();
-    void handle_insert(const Insert &action);
+    void handle_insert(const InsertAction &action);
     void handle_delete();
     void handle_backspace();
+    void handle_escape();
+
     void calculate_lines();
     std::size_t calculate_x(const Line &line, std::size_t index) const;
     std::size_t calculate_x_index(const Line &line, std::size_t count) const;

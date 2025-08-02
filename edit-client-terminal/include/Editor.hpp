@@ -18,6 +18,7 @@ class Editor
 
     // Components.
     std::shared_ptr<edit::network::INetworkComponent> network_component_;
+    ModeComponent mode_component_;
     BufferComponent buffer_component_;
     StatusComponent status_component_;
 

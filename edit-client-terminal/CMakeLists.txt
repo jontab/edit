@@ -18,6 +18,7 @@ find_package(OpenSSL REQUIRED)
 
 add_library(edit-client-terminal-lib
     ${CMAKE_CURRENT_SOURCE_DIR}/src/components/BufferComponent.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/components/ModeComponent.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/components/StatusComponent.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/network/BeastNetworkComponent.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ui/BufferView.cpp
