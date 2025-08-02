@@ -1,7 +1,7 @@
 #include "components/StatusComponent.hpp"
 
-edit::StatusComponent::StatusComponent(ActionBus &action_bus, EventBus &event_bus, ModeComponent &mode_component)
-    : action_bus_(action_bus)
+edit::StatusComponent::StatusComponent(Dispatcher &dispatcher, ModeComponent &mode_component)
+    : dispatcher_(dispatcher)
     , mode_component_(mode_component)
     , display_cursor_index_()
     , display_cursor_y_()
@@ -10,15 +10,15 @@ edit::StatusComponent::StatusComponent(ActionBus &action_bus, EventBus &event_bu
     , command_cursor_(0)
     , command_content_("")
 {
-    event_bus.on<CursorMovedEvent>([this](const auto &ev) { handle_cursor_moved(ev); });
-    event_bus.on<ModeChangedEvent>([this](const auto &ev) { handle_mode_changed(ev); });
-    action_bus.on<StatusAction>([this](const auto &ev) { status_ = ev.text; });
-    action_bus.on<CursorLeftAction>([this](const auto &) { handle_cursor_left(); });
-    action_bus.on<CursorRightAction>([this](const auto &) { handle_cursor_right(); });
-    action_bus.on<InsertAction>([this](const auto &ev) { handle_insert(ev); });
-    action_bus.on<DeleteAction>([this](const auto &) { handle_delete(); });
-    action_bus.on<BackspaceAction>([this](const auto &) { handle_backspace(); });
-    action_bus.on<EscapeAction>([this](const auto &ev) { handle_escape(); });
+    dispatcher.on_event<CursorMovedEvent>([this](const auto &ev) { handle_cursor_moved(ev); });
+    dispatcher.on_event<ModeChangedEvent>([this](const auto &ev) { handle_mode_changed(ev); });
+    dispatcher.on_action<StatusAction>([this](const auto &ev) { status_ = ev.text; });
+    dispatcher.on_action<CursorLeftAction>([this](const auto &) { handle_cursor_left(); });
+    dispatcher.on_action<CursorRightAction>([this](const auto &) { handle_cursor_right(); });
+    dispatcher.on_action<InsertAction>([this](const auto &ev) { handle_insert(ev); });
+    dispatcher.on_action<DeleteAction>([this](const auto &) { handle_delete(); });
+    dispatcher.on_action<BackspaceAction>([this](const auto &) { handle_backspace(); });
+    dispatcher.on_action<EscapeAction>([this](const auto &ev) { handle_escape(); });
 }
 
 std::size_t edit::StatusComponent::display_cursor_index() const
@@ -75,7 +75,7 @@ void edit::StatusComponent::handle_mode_changed(const ModeChangedEvent &ev)
 void edit::StatusComponent::handle_escape()
 {
     if (mode_component_.mode() == Mode::CommandMode)
-        action_bus_.publish(edit::ChangeModeAction{Mode::NormalMode});
+        dispatcher_.dispatch(edit::ChangeModeAction{Mode::NormalMode});
 }
 
 void edit::StatusComponent::handle_cursor_left()
@@ -103,8 +103,8 @@ void edit::StatusComponent::handle_insert(const InsertAction &ev)
 
     if (auto ch = static_cast<char>(ev.ch); ch == '\n')
     {
-        action_bus_.publish(edit::CommandAction{command_content_});
-        action_bus_.publish(edit::ChangeModeAction{Mode::NormalMode});
+        dispatcher_.dispatch(edit::CommandAction{command_content_});
+        dispatcher_.dispatch(edit::ChangeModeAction{Mode::NormalMode});
     }
     else if (isprint(ch))
     {

@@ -71,7 +71,7 @@ unsigned int TermboxBackend::width()
     }
 }
 
-void TermboxBackend::poll(ActionBus &action_bus, EventBus &event_bus, const std::function<void(unsigned int, unsigned int)> &on_resize)
+void TermboxBackend::poll(Dispatcher &dispatcher, const std::function<void(unsigned int, unsigned int)> &on_resize)
 {
     struct tb_event ev;
     switch (tb_peek_event(&ev, 50))
@@ -85,7 +85,7 @@ void TermboxBackend::poll(ActionBus &action_bus, EventBus &event_bus, const std:
     switch (ev.type)
     {
     case TB_EVENT_KEY:
-        on_key(ev, action_bus, event_bus);
+        on_key(ev, dispatcher);
         break;
     case TB_EVENT_RESIZE:
         on_resize(height(), width());
@@ -95,46 +95,46 @@ void TermboxBackend::poll(ActionBus &action_bus, EventBus &event_bus, const std:
     }
 }
 
-void TermboxBackend::on_key(const struct tb_event &ev, ActionBus &action_bus, EventBus &event_bus)
+void TermboxBackend::on_key(const struct tb_event &ev, Dispatcher &dispatcher)
 {
     if (!ev.mod && !ev.key && isprint(ev.ch))
     {
-        event_bus.publish(edit::KeyPressedEvent{ev.ch});
-        action_bus.publish(edit::CursorRightAction{});
+        dispatcher.emit(edit::KeyPressedEvent{ev.ch});
+        dispatcher.dispatch(edit::CursorRightAction{});
         return;
     }
 
     switch (ev.key)
     {
     case TB_KEY_ENTER:
-        event_bus.publish(edit::KeyPressedEvent{'\n'});
-        action_bus.publish(edit::CursorRightAction{});
+        dispatcher.emit(edit::KeyPressedEvent{'\n'});
+        dispatcher.dispatch(edit::CursorRightAction{});
         return;
     case TB_KEY_TAB:
-        event_bus.publish(edit::KeyPressedEvent{'\t'});
-        action_bus.publish(edit::CursorRightAction{});
+        dispatcher.emit(edit::KeyPressedEvent{'\t'});
+        dispatcher.dispatch(edit::CursorRightAction{});
         return;
     case TB_KEY_ARROW_UP:
-        action_bus.publish(edit::CursorUpAction{});
+        dispatcher.dispatch(edit::CursorUpAction{});
         return;
     case TB_KEY_ARROW_DOWN:
-        action_bus.publish(edit::CursorDownAction{});
+        dispatcher.dispatch(edit::CursorDownAction{});
         return;
     case TB_KEY_ARROW_LEFT:
-        action_bus.publish(edit::CursorLeftAction{});
+        dispatcher.dispatch(edit::CursorLeftAction{});
         return;
     case TB_KEY_ARROW_RIGHT:
-        action_bus.publish(edit::CursorRightAction{});
+        dispatcher.dispatch(edit::CursorRightAction{});
         return;
     case TB_KEY_DELETE:
-        action_bus.publish(edit::DeleteAction{});
+        dispatcher.dispatch(edit::DeleteAction{});
         return;
     case TB_KEY_BACKSPACE:
     case TB_KEY_BACKSPACE2:
-        action_bus.publish(edit::BackspaceAction{});
+        dispatcher.dispatch(edit::BackspaceAction{});
         return;
     case TB_KEY_ESC:
-        action_bus.publish(edit::EscapeAction{});
+        dispatcher.dispatch(edit::EscapeAction{});
         break;
     default:
         break;

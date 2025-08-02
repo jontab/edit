@@ -55,11 +55,10 @@ class MockBackend : public edit::ui::IViewBackend
         return dims_.x;
     }
 
-    inline void poll(edit::ActionBus &action_bus,
-        edit::EventBus &event_bus,
+    inline void poll(edit::Dispatcher &dispatcher,
         const std::function<void(unsigned int, unsigned int)> &on_resize) override
     {
-        action_bus.publish(edit::QuitAction{});
+        dispatcher.dispatch(edit::QuitAction{});
     }
 
     std::uint32_t get_char_at(unsigned int y, unsigned int x) const

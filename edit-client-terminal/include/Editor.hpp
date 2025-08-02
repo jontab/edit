@@ -13,8 +13,7 @@ class Editor
 {
     // Core.
     std::shared_ptr<boost::asio::io_context> ioc_;
-    std::shared_ptr<ActionBus> action_bus_;
-    std::shared_ptr<EventBus> event_bus_;
+    std::unique_ptr<Dispatcher> dispatcher_;
 
     // Components.
     std::shared_ptr<edit::network::INetworkComponent> network_component_;
@@ -30,8 +29,7 @@ class Editor
 
   public:
     Editor(std::shared_ptr<boost::asio::io_context> ioc,
-        std::shared_ptr<ActionBus> action_bus,
-        std::shared_ptr<EventBus> event_bus,
+        std::unique_ptr<Dispatcher> &&dispatcher,
         std::shared_ptr<edit::network::INetworkComponent> network_component,
         std::unique_ptr<ui::IView> &&view);
 

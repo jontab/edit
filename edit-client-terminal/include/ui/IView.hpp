@@ -11,7 +11,7 @@ class IView
   public:
     virtual ~IView() = default;
 
-    virtual void poll(ActionBus &action_bus, EventBus &event_bus) = 0;
+    virtual void poll(Dispatcher &dispatcher) = 0;
     virtual void render(const BufferComponent &buffer, const StatusComponent &status) = 0;
 };
 

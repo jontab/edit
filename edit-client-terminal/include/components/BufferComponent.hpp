@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ModeComponent.hpp"
-#include "core/Bus.hpp"
+#include "core/Dispatcher.hpp"
 #include "core/Point.hpp"
 #include <edit-common/Buffer.hpp>
 #include <utility>
@@ -18,8 +18,7 @@ class BufferComponent
     };
 
     // Core.
-    ActionBus &action_bus_;
-    EventBus &event_bus_;
+    Dispatcher &dispatcher_;
     ModeComponent &mode_component_;
 
     common::Buffer buffer_;
@@ -27,18 +26,10 @@ class BufferComponent
     std::size_t cursor_;
     int site_;
 
-    void init(ActionBus &action_bus);
-
   public:
-    BufferComponent(ActionBus &action_bus, EventBus &event_bus, ModeComponent &mode_component);
-    BufferComponent(ActionBus &action_bus,
-        EventBus &event_bus,
-        ModeComponent &mode_component,
-        const std::vector<common::Char> &chars);
-    BufferComponent(ActionBus &action_bus,
-        EventBus &event_bus,
-        ModeComponent &mode_component,
-        std::vector<common::Char> &&chars);
+    BufferComponent(Dispatcher &dispatcher, ModeComponent &mode_component);
+    BufferComponent(Dispatcher &dispatcher, ModeComponent &mode_component, const std::vector<common::Char> &chars);
+    BufferComponent(Dispatcher &dispatcher, ModeComponent &mode_component, std::vector<common::Char> &&chars);
 
     void set_cursor_index(std::size_t index);
     int site() const;
@@ -51,6 +42,8 @@ class BufferComponent
     Mode mode() const;
 
   private:
+    void init(Dispatcher &dispatcher);
+
     // Actions.
     void handle_cursor_up();
     void handle_cursor_down();

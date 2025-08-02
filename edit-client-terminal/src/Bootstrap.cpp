@@ -12,8 +12,7 @@ int edit::Bootstrap::run(int argc, char **argv)
     Args args(argc, argv);
 
     auto ioc = std::make_shared<boost::asio::io_context>();
-    auto action_bus = std::make_shared<ActionBus>();
-    auto event_bus = std::make_shared<EventBus>();
+    auto dispatcher = std::make_unique<Dispatcher>();
 
     // `INetworkComponent`.
     auto network_component = std::make_shared<edit::network::BeastNetworkComponent>(ioc);
@@ -30,13 +29,13 @@ int edit::Bootstrap::run(int argc, char **argv)
         }
     }
 
-    network_component->bind(*action_bus, *event_bus);
+    network_component->bind(*dispatcher);
 
     // `IView`.
     auto view = std::make_unique<edit::ui::TermboxView>();
     try
     {
-        edit::Editor editor{ioc, action_bus, event_bus, network_component, std::move(view)};
+        edit::Editor editor{ioc, std::move(dispatcher), network_component, std::move(view)};
         editor.run();
     }
     catch (const std::exception &error)

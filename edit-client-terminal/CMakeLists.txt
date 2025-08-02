@@ -59,7 +59,7 @@ if(BUILD_TESTING)
 
     add_executable(edit-client-terminal-tests
         ${CMAKE_CURRENT_SOURCE_DIR}/tests/BufferComponentTests.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/tests/BusTests.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/DispatcherTests.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/tests/EditorTests.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/tests/StatusComponentTests.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/tests/StatusViewTests.cpp)

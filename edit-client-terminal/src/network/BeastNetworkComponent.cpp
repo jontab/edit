@@ -16,8 +16,7 @@ BeastNetworkComponent::BeastNetworkComponent(std::shared_ptr<asio::io_context> i
     , reconnect_attempts_(0)
     , buffer_()
     , connect_promise_()
-    , action_bus_()
-    , event_bus_()
+    , dispatcher_()
 {
     // Use OS-dependent configuration for default certificate authority paths.
     boost::system::error_code ec;
@@ -61,12 +60,11 @@ std::future<NetworkConnectResult> BeastNetworkComponent::connect(const std::stri
 }
 
 /**
- * @brief Binds `ActionBus` and `EventBus` to this component. Used for sending and receiving actions and events.
+ * @brief Binds `Dispatcher` to this component. Used for sending and receiving actions and events.
  */
-void BeastNetworkComponent::bind(ActionBus &action_bus, EventBus &event_bus)
+void BeastNetworkComponent::bind(Dispatcher &dispatcher)
 {
-    action_bus_ = std::ref(action_bus);
-    event_bus_ = std::ref(event_bus);
+    dispatcher_ = std::ref(dispatcher);
 }
 
 void BeastNetworkComponent::do_resolve()

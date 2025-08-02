@@ -39,9 +39,8 @@ class BeastNetworkComponent
     boost::beast::flat_buffer buffer_;
     std::shared_ptr<std::promise<NetworkConnectResult>> connect_promise_;
 
-    // `Editor` buses, populated in `bind`.
-    std::optional<std::reference_wrapper<ActionBus>> action_bus_;
-    std::optional<std::reference_wrapper<EventBus>> event_bus_;
+    // `Dispatcher`, populated in `bind`.
+    std::optional<std::reference_wrapper<Dispatcher>> dispatcher_;
 
   public:
     BeastNetworkComponent(std::shared_ptr<asio::io_context> ioc);
@@ -50,7 +49,7 @@ class BeastNetworkComponent
         const std::string &port,
         const std::string &path,
         const std::string &apikey) override;
-    void bind(ActionBus &action_bus, EventBus &event_bus) override;
+    void bind(Dispatcher &dispatcher) override;
 
   private:
     void do_resolve();
@@ -66,4 +65,4 @@ class BeastNetworkComponent
     void reset();
 };
 
-} // namespace edit::net
+} // namespace edit::network

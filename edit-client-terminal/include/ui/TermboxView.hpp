@@ -20,7 +20,7 @@ class TermboxView : public IView
   public:
     TermboxView();
 
-    void poll(ActionBus &action_bus, EventBus &event_bus) override;
+    void poll(Dispatcher &dispatcher) override;
     void render(const BufferComponent &buffer, const StatusComponent &status) override;
 };
 

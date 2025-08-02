@@ -1,12 +1,11 @@
 #include "components/ModeComponent.hpp"
 
-edit::ModeComponent::ModeComponent(ActionBus &action_bus, EventBus &event_bus)
-    : action_bus_(action_bus)
-    , event_bus_(event_bus)
+edit::ModeComponent::ModeComponent(Dispatcher &dispatcher)
+    : dispatcher_(dispatcher)
     , mode_(Mode::NormalMode)
 {
-    action_bus.on<ChangeModeAction>([this](const auto &ev) { handle_change_mode(ev.to); });
-    event_bus.on<KeyPressedEvent>([this](const auto &ev) { handle_key_pressed(ev); });
+    dispatcher.on_action<ChangeModeAction>([this](const auto &ev) { handle_change_mode(ev.to); });
+    dispatcher.on_event<KeyPressedEvent>([this](const auto &ev) { handle_key_pressed(ev); });
 }
 
 edit::Mode edit::ModeComponent::mode() const
@@ -28,7 +27,7 @@ void edit::ModeComponent::handle_key_pressed(const KeyPressedEvent &ev)
         break;
 
     default:
-        action_bus_.publish(edit::InsertAction{ev.ch});
+        dispatcher_.dispatch(edit::InsertAction{ev.ch});
         break;
     }
 }
@@ -38,6 +37,6 @@ void edit::ModeComponent::handle_change_mode(Mode mode)
     if (mode_ != mode)
     {
         mode_ = mode;
-        event_bus_.publish(edit::ModeChangedEvent{mode});
+        dispatcher_.emit(edit::ModeChangedEvent{mode});
     }
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/Bus.hpp"
+#include "core/Dispatcher.hpp"
 #include "core/Mode.hpp"
 
 namespace edit
@@ -8,12 +8,11 @@ namespace edit
 
 class ModeComponent
 {
-    ActionBus &action_bus_;
-    EventBus &event_bus_;
+    Dispatcher &dispatcher_;
     Mode mode_;
 
   public:
-    ModeComponent(ActionBus &action_bus, EventBus &event_bus);
+    ModeComponent(Dispatcher &dispatcher);
 
     Mode mode() const;
 

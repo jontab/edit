@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ModeComponent.hpp"
-#include "core/Bus.hpp"
 
 namespace edit
 {
@@ -9,7 +8,7 @@ namespace edit
 class StatusComponent
 {
     // Core.
-    ActionBus &action_bus_;
+    Dispatcher &dispatcher_;
     ModeComponent &mode_component_;
 
     // State.
@@ -21,7 +20,7 @@ class StatusComponent
     std::string command_content_;
 
   public:
-    StatusComponent(ActionBus &action_bus, EventBus &event_bus, ModeComponent &mode_component);
+    StatusComponent(Dispatcher &dispatcher_, ModeComponent &mode_component);
 
     std::size_t display_cursor_y() const;
     std::size_t display_cursor_x() const;
