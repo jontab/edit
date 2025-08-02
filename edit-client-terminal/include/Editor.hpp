@@ -1,26 +1,38 @@
 #pragma once
 
-#include "BufferComponent.hpp"
-#include "StatusComponent.hpp"
-#include "net/INetworkComponent.hpp"
+#include "components/BufferComponent.hpp"
+#include "components/StatusComponent.hpp"
+#include "network/INetworkComponent.hpp"
 #include "ui/IView.hpp"
-#include <iostream>
+#include <boost/asio.hpp>
 
 namespace edit
 {
 
 class Editor
 {
-    std::unique_ptr<ui::IView> view_;
-    ActionBus action_bus_;
-    EventBus event_bus_;
+    // Core.
+    std::shared_ptr<boost::asio::io_context> ioc_;
+    std::shared_ptr<ActionBus> action_bus_;
+    std::shared_ptr<EventBus> event_bus_;
+
+    // Components.
+    std::shared_ptr<edit::network::INetworkComponent> network_component_;
     BufferComponent buffer_component_;
     StatusComponent status_component_;
-    std::unique_ptr<edit::net::INetworkComponent> network_component_;
+
+    // View.
+    std::unique_ptr<ui::IView> view_;
+
+    // State.
     bool is_running_;
 
   public:
-    Editor(std::unique_ptr<ui::IView> &&view, std::unique_ptr<edit::net::INetworkComponent> &&network);
+    Editor(std::shared_ptr<boost::asio::io_context> ioc,
+        std::shared_ptr<ActionBus> action_bus,
+        std::shared_ptr<EventBus> event_bus,
+        std::shared_ptr<edit::network::INetworkComponent> network_component,
+        std::unique_ptr<ui::IView> &&view);
 
     void run();
 };

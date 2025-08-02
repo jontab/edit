@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ui/IViewBackend.hpp"
-#include "ui/Point.hpp"
 #include <unordered_map>
 
 class MockBackend : public edit::ui::IViewBackend
@@ -11,7 +10,9 @@ class MockBackend : public edit::ui::IViewBackend
     std::unordered_map<edit::ui::Point<unsigned int>, std::uint32_t> pixels_;
 
   public:
-    inline MockBackend(unsigned int height, unsigned int width) : dims_({height, width}), cursor_({0, 0})
+    inline MockBackend(unsigned int height, unsigned int width)
+        : dims_({height, width})
+        , cursor_({0, 0})
     {
     }
 
@@ -54,7 +55,8 @@ class MockBackend : public edit::ui::IViewBackend
         return dims_.x;
     }
 
-    inline void poll(edit::ActionBus &action_bus, const std::function<void(unsigned int, unsigned int)> &on_resize) override
+    inline void poll(edit::ActionBus &action_bus,
+        const std::function<void(unsigned int, unsigned int)> &on_resize) override
     {
         action_bus.publish(edit::Quit{});
     }

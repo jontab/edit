@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Point.hpp"
+#include "core/Point.hpp"
 
 namespace edit::ui
 {

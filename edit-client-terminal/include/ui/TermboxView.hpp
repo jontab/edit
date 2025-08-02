@@ -1,10 +1,10 @@
 #pragma once
 
-#include "../Bus.hpp"
-#include "ui/BufferView.hpp"
-#include "ui/IView.hpp"
-#include "ui/LayoutEngine.hpp"
-#include "ui/StatusView.hpp"
+#include "BufferView.hpp"
+#include "IView.hpp"
+#include "LayoutEngine.hpp"
+#include "StatusView.hpp"
+#include "core/Bus.hpp"
 #include <memory>
 
 namespace edit::ui

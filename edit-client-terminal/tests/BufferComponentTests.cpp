@@ -1,4 +1,4 @@
-#include "BufferComponent.hpp"
+#include "components/BufferComponent.hpp"
 #include <gtest/gtest.h>
 
 using ActionBus = edit::ActionBus;

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../StatusComponent.hpp"
 #include "IViewComponent.hpp"
+#include "components/StatusComponent.hpp"
 
 namespace edit::ui
 {

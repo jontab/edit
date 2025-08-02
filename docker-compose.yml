@@ -3,5 +3,22 @@ services:
     build:
       context: .
     container_name: edit-server
+    expose:
+      - "3000"
+    environment:
+      - ALLOW_SELF_SIGNED_CERTIFICATES=1
+  caddy:
+    image: caddy:2
     ports:
-      - "3000:3000"
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - edit-server
+
+volumes:
+  caddy_data:
+  caddy_config:

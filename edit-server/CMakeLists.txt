@@ -30,11 +30,43 @@ target_include_directories(uWebSockets INTERFACE ${uWebSockets_SOURCE_DIR}/src)
 target_link_libraries(uWebSockets INTERFACE uSockets ${ZLIB_LIBRARIES})
 
 ################################################################################
+# edit-server-lib                                                              #
+################################################################################
+
+add_library(edit-server-lib 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/BufferSessionManager.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/FileSystemDatabase.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/uWebSocketServer.cpp)
+
+target_include_directories(edit-server-lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+target_compile_options(edit-server-lib PRIVATE -Wall -Werror -Wpedantic)
+
+target_link_libraries(edit-server-lib PUBLIC uWebSockets edit-common)
+
+################################################################################
 # edit-server                                                                  #
 ################################################################################
 
 add_executable(edit-server ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
 
-target_link_libraries(edit-server uWebSockets)
+target_link_libraries(edit-server PRIVATE edit-server-lib)
 
 target_compile_options(edit-server PRIVATE -Wall -Werror -Wpedantic)
+
+################################################################################
+# edit-server-tests                                                            #
+################################################################################
+
+if(BUILD_TESTING)
+    enable_testing()
+
+    add_executable(edit-server-tests
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/BufferSessionManagerTests.cpp)
+
+    target_link_libraries(edit-server-tests PRIVATE
+        edit-server-lib 
+        GTest::gmock_main)
+
+    gtest_discover_tests(edit-server-tests)
+endif()

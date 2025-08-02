@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../BufferComponent.hpp"
-#include "../StatusComponent.hpp"
+#include "components/BufferComponent.hpp"
+#include "components/StatusComponent.hpp"
 
 namespace edit::ui
 {

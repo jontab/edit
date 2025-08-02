@@ -17,17 +17,17 @@ find_package(Boost REQUIRED COMPONENTS system)
 find_package(OpenSSL REQUIRED)
 
 add_library(edit-client-terminal-lib
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/net/BeastNetworkComponent.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/net/BeastNetworkConnector.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/components/BufferComponent.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/components/StatusComponent.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/network/BeastNetworkComponent.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ui/BufferView.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ui/LayoutEngine.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ui/StatusView.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ui/TermboxBackend.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ui/TermboxView.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Args.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/BufferComponent.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Editor.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/StatusComponent.cpp)
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Bootstrap.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Editor.cpp)
 
 target_include_directories(edit-client-terminal-lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 

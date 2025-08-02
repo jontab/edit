@@ -1,5 +1,6 @@
 #pragma once
 
+#include <edit-common/Char.hpp>
 #include <variant>
 
 namespace edit
@@ -12,6 +13,11 @@ struct CursorMoved
     std::size_t new_x;
 };
 
-using Event = std::variant<CursorMoved>;
+struct CharInserted
+{
+    common::Char ch;
+};
+
+using Event = std::variant<CursorMoved, CharInserted>;
 
 } // namespace edit

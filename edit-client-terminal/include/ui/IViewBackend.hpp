@@ -1,6 +1,7 @@
 #pragma once
 
-#include "../Bus.hpp"
+#include "core/Bus.hpp"
+#include "core/Point.hpp"
 #include <cstdint>
 #include <functional>
 #include <string>

@@ -1,0 +1,4 @@
+localhost {
+    reverse_proxy edit-server:3000
+    tls internal
+}

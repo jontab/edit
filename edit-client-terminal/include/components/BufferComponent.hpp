@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Bus.hpp"
-#include "ui/Point.hpp"
+#include "core/Bus.hpp"
+#include "core/Point.hpp"
 #include <edit-common/Buffer.hpp>
 #include <utility>
 

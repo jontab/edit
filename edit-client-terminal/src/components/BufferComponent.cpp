@@ -1,19 +1,28 @@
-#include "BufferComponent.hpp"
+#include "components/BufferComponent.hpp"
 
 edit::BufferComponent::BufferComponent(ActionBus &action_bus, EventBus &event_bus)
     : BufferComponent(action_bus, event_bus, {})
 {
 }
 
-edit::BufferComponent::BufferComponent(ActionBus &action_bus, EventBus &event_bus,
-                                       const std::vector<common::Char> &chars)
-    : event_bus_(event_bus), buffer_(chars), lines_(), cursor_(0), site_(rand())
+edit::BufferComponent::BufferComponent(ActionBus &action_bus,
+    EventBus &event_bus,
+    const std::vector<common::Char> &chars)
+    : event_bus_(event_bus)
+    , buffer_(chars)
+    , lines_()
+    , cursor_(0)
+    , site_(rand())
 {
     init(action_bus);
 }
 
 edit::BufferComponent::BufferComponent(ActionBus &action_bus, EventBus &event_bus, std::vector<common::Char> &&chars)
-    : event_bus_(event_bus), buffer_(std::move(chars)), lines_(), cursor_(0), site_(rand())
+    : event_bus_(event_bus)
+    , buffer_(std::move(chars))
+    , lines_()
+    , cursor_(0)
+    , site_(rand())
 {
     init(action_bus);
 }
@@ -197,15 +206,17 @@ void edit::BufferComponent::handle_insert(const Insert &action)
         parent_site = buffer_[cursor_ - 1].site;
     }
 
-    buffer_.insert(edit::common::Char{
+    edit::common::Char ch{
         .parent_clock = parent_clock,
         .parent_site = parent_site,
         .clock = buffer_.clock() + 1,
         .site = site_,
         .ch = action.ch,
         .is_deleted = false,
-    });
+    };
+    buffer_.insert(ch);
     calculate_lines();
+    event_bus_.publish(CharInserted{ch});
 }
 
 void edit::BufferComponent::handle_delete()

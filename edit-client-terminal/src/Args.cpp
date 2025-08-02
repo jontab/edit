@@ -4,7 +4,7 @@
 
 using namespace edit;
 
-Args::Args() : host("localhost"), port("443"), docid("DefaultDocument"), apikey("")
+Args::Args() : host("localhost"), port("443"), docid(""), apikey("")
 {
 }
 

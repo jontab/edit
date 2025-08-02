@@ -25,7 +25,8 @@ template <typename Message> class Bus
         std::function<void(const T &)> callback;
 
       public:
-        explicit Handler(std::function<void(const T &)> type) : callback(std::move(type))
+        explicit Handler(std::function<void(const T &)> type)
+            : callback(std::move(type))
         {
         }
 

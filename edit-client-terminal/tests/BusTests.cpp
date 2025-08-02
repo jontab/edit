@@ -1,4 +1,4 @@
-#include "Bus.hpp"
+#include "core/Bus.hpp"
 #include <gtest/gtest.h>
 
 TEST(ActionBusTests, Publish_WorksAsExpected)

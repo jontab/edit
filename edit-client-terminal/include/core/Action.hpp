@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <variant>
+#include <string>
 
 namespace edit
 {
@@ -39,6 +40,11 @@ struct CursorRight
 {
 };
 
-using Action = std::variant<Quit, Insert, Delete, Backspace, CursorUp, CursorDown, CursorLeft, CursorRight>;
+struct Status
+{
+    std::string text;
+};
+
+using Action = std::variant<Quit, Insert, Delete, Backspace, CursorUp, CursorDown, CursorLeft, CursorRight, Status>;
 
 } // namespace edit
