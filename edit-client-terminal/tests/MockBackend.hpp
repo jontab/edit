@@ -5,9 +5,9 @@
 
 class MockBackend : public edit::ui::IViewBackend
 {
-    edit::ui::Point<unsigned int> dims_;
-    edit::ui::Point<unsigned int> cursor_;
-    std::unordered_map<edit::ui::Point<unsigned int>, std::uint32_t> pixels_;
+    edit::core::Point<unsigned int> dims_;
+    edit::core::Point<unsigned int> cursor_;
+    std::unordered_map<edit::core::Point<unsigned int>, std::uint32_t> pixels_;
 
   public:
     inline MockBackend(unsigned int height, unsigned int width)
@@ -28,7 +28,7 @@ class MockBackend : public edit::ui::IViewBackend
     inline void put_char(unsigned int y, unsigned int x, std::uint32_t ch) override
     {
         if (y < dims_.y)
-            pixels_[edit::ui::Point<unsigned int>{y, x}] = ch;
+            pixels_[edit::core::Point<unsigned int>{y, x}] = ch;
         // TODO: Maybe throw?
     }
 
@@ -36,7 +36,7 @@ class MockBackend : public edit::ui::IViewBackend
     {
         for (unsigned int i = 0; i < static_cast<unsigned int>(text.size()); i++)
             if ((y < dims_.y) && (x + i < dims_.x))
-                pixels_[edit::ui::Point<unsigned int>{y, x + i}] = text[i];
+                pixels_[edit::core::Point<unsigned int>{y, x + i}] = text[i];
         // TODO: Maybe throw?
     }
 
@@ -63,7 +63,7 @@ class MockBackend : public edit::ui::IViewBackend
 
     std::uint32_t get_char_at(unsigned int y, unsigned int x) const
     {
-        edit::ui::Point<unsigned int> key{y, x};
+        edit::core::Point<unsigned int> key{y, x};
         auto it = pixels_.find(key);
         if (it != pixels_.end())
         {
@@ -75,7 +75,7 @@ class MockBackend : public edit::ui::IViewBackend
         }
     }
 
-    edit::ui::Point<unsigned int> get_cursor() const
+    edit::core::Point<unsigned int> get_cursor() const
     {
         return cursor_;
     }

@@ -1,8 +1,7 @@
 #pragma once
 
-#include "components/BufferComponent.hpp"
-#include "components/StatusComponent.hpp"
 #include "network/INetworkComponent.hpp"
+#include "state/EditorStore.hpp"
 #include "ui/IView.hpp"
 #include <boost/asio.hpp>
 
@@ -17,9 +16,7 @@ class Editor
 
     // Components.
     std::shared_ptr<edit::network::INetworkComponent> network_component_;
-    ModeComponent mode_component_;
-    BufferComponent buffer_component_;
-    StatusComponent status_component_;
+    EditorStore store_;
 
     // View.
     std::unique_ptr<ui::IView> view_;
@@ -34,6 +31,10 @@ class Editor
         std::unique_ptr<ui::IView> &&view);
 
     void run();
+
+  private:
+    void handle(const CommandEnteredEvent &e);
+    void handle(const KeyPressedEvent &e);
 };
 
 } // namespace edit

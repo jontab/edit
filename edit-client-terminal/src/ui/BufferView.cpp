@@ -1,22 +1,23 @@
 #include "ui/BufferView.hpp"
 
-using namespace edit::ui;
-
-BufferView::BufferView()
+edit::ui::BufferView::BufferView()
     : camera_({0, 0})
 {
 }
 
-void BufferView::render(IViewBackend &backend, const BufferComponent &buffer, const Rect<unsigned int> &bounds)
+void edit::ui::BufferView::render(IViewBackend &backend,
+    const BufferSlice &buffer,
+    const core::Rect<unsigned int> &bounds,
+    Mode mode)
 {
     auto cursor = buffer.get_cursor_position();
     adjust_camera_y(cursor.y, bounds);
     adjust_camera_x(cursor.x, bounds);
     render_lines(backend, buffer, bounds);
-    render_cursor(backend, buffer, bounds);
+    render_cursor(backend, buffer, bounds, mode);
 }
 
-void BufferView::adjust_camera_y(std::size_t cursor_y, const Rect<unsigned int> &bounds)
+void edit::ui::BufferView::adjust_camera_y(std::size_t cursor_y, const core::Rect<unsigned int> &bounds)
 {
     auto y_top = camera_.y;                    // Inclusive.
     auto y_bottom = camera_.y + bounds.size.y; // Exclusive.
@@ -34,7 +35,7 @@ void BufferView::adjust_camera_y(std::size_t cursor_y, const Rect<unsigned int> 
     }
 }
 
-void BufferView::adjust_camera_x(std::size_t cursor_x, const Rect<unsigned int> &bounds)
+void edit::ui::BufferView::adjust_camera_x(std::size_t cursor_x, const core::Rect<unsigned int> &bounds)
 {
     auto x_left = camera_.x;                  // Inclusive.
     auto x_right = camera_.x + bounds.size.x; // Exclusive.
@@ -52,7 +53,9 @@ void BufferView::adjust_camera_x(std::size_t cursor_x, const Rect<unsigned int> 
     }
 }
 
-void BufferView::render_lines(IViewBackend &backend, const BufferComponent &buffer, const Rect<unsigned int> &bounds)
+void edit::ui::BufferView::render_lines(IViewBackend &backend,
+    const BufferSlice &buffer,
+    const core::Rect<unsigned int> &bounds)
 {
     for (unsigned int view_y = 0; view_y < bounds.size.y; view_y++)
     {
@@ -76,7 +79,10 @@ void BufferView::render_lines(IViewBackend &backend, const BufferComponent &buff
     }
 }
 
-void BufferView::render_cursor(IViewBackend &backend, const BufferComponent &buffer, const Rect<unsigned int> &bounds)
+void edit::ui::BufferView::render_cursor(IViewBackend &backend,
+    const BufferSlice &buffer,
+    const core::Rect<unsigned int> &bounds,
+    Mode mode)
 {
     auto cursor = buffer.get_cursor_position();
     DrawCursorContext ctx{
@@ -95,7 +101,7 @@ void BufferView::render_cursor(IViewBackend &backend, const BufferComponent &buf
         }
     }
 
-    if ((buffer.mode() == Mode::InsertMode) || (buffer.mode() == Mode::NormalMode))
+    if ((mode == Mode::InsertMode) || (mode == Mode::NormalMode))
     {
         // Cursor.
         auto view_y = cursor.y - camera_.y;
@@ -107,7 +113,7 @@ void BufferView::render_cursor(IViewBackend &backend, const BufferComponent &buf
     }
 }
 
-bool BufferView::render_line_callback(std::uint32_t ch, DrawLineContext &ctx)
+bool edit::ui::BufferView::render_line_callback(std::uint32_t ch, DrawLineContext &ctx)
 {
     if (ch == '\t')
     {
@@ -125,7 +131,7 @@ bool BufferView::render_line_callback(std::uint32_t ch, DrawLineContext &ctx)
     return true;
 }
 
-bool BufferView::render_line_callback_put(std::uint32_t ch, struct DrawLineContext &ctx)
+bool edit::ui::BufferView::render_line_callback_put(std::uint32_t ch, struct DrawLineContext &ctx)
 {
     bool is_before = ctx.view_camera_remaining > 0;
     bool is_after = ctx.view_x >= ctx.bounds.size.x;
@@ -148,7 +154,7 @@ bool BufferView::render_line_callback_put(std::uint32_t ch, struct DrawLineConte
     }
 }
 
-bool BufferView::render_cursor_callback(std::uint32_t ch, DrawCursorContext &ctx)
+bool edit::ui::BufferView::render_cursor_callback(std::uint32_t ch, DrawCursorContext &ctx)
 {
     if (ctx.x > 0)
     {
@@ -162,7 +168,7 @@ bool BufferView::render_cursor_callback(std::uint32_t ch, DrawCursorContext &ctx
     }
 }
 
-int BufferView::calculate_tab_count(std::size_t view_x)
+int edit::ui::BufferView::calculate_tab_count(std::size_t view_x)
 {
     return 4 - static_cast<int>(view_x % 4);
 }

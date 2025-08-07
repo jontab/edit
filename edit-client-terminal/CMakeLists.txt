@@ -17,10 +17,11 @@ find_package(Boost REQUIRED COMPONENTS system)
 find_package(OpenSSL REQUIRED)
 
 add_library(edit-client-terminal-lib
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/components/BufferComponent.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/components/ModeComponent.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/components/StatusComponent.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/network/BeastNetworkComponent.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/state/BufferSlice.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/state/EditorStore.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/state/ModeSlice.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/state/StatusSlice.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ui/BufferView.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ui/LayoutEngine.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ui/StatusView.cpp
@@ -58,10 +59,10 @@ if(BUILD_TESTING)
     enable_testing()
 
     add_executable(edit-client-terminal-tests
-        ${CMAKE_CURRENT_SOURCE_DIR}/tests/BufferComponentTests.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/BufferSliceTests.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/tests/DispatcherTests.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/tests/EditorTests.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/tests/StatusComponentTests.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/StatusSliceTests.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/tests/StatusViewTests.cpp)
 
     target_link_libraries(edit-client-terminal-tests

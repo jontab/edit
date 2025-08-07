@@ -1,7 +1,6 @@
 #pragma once
 
-#include "components/BufferComponent.hpp"
-#include "components/StatusComponent.hpp"
+#include "state/EditorStore.hpp"
 
 namespace edit::ui
 {
@@ -12,7 +11,7 @@ class IView
     virtual ~IView() = default;
 
     virtual void poll(Dispatcher &dispatcher) = 0;
-    virtual void render(const BufferComponent &buffer, const StatusComponent &status) = 0;
+    virtual void render(const EditorStore &store) = 0;
 };
 
 } // namespace edit::ui

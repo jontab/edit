@@ -39,14 +39,6 @@ struct ChangeModeAction
 };
 
 /**
- * @brief Request to change status.
- */
-struct StatusAction
-{
-    std::string text;
-};
-
-/**
  * @brief Request to insert a character.
  */
 struct InsertAction
@@ -100,7 +92,6 @@ using Action = std::variant<QuitAction, // Break.
     EscapeAction,
     CommandAction,
     ChangeModeAction,
-    StatusAction,
     InsertAction,
     DeleteAction,
     BackspaceAction,

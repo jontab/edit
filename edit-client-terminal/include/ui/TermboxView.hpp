@@ -14,14 +14,14 @@ class TermboxView : public IView
 {
     std::unique_ptr<IViewBackend> backend_;
     LayoutEngine layout_;
-    std::unique_ptr<BufferView> buffer_;
-    std::unique_ptr<StatusView> status_;
+    BufferView buffer_;
+    StatusView status_;
 
   public:
     TermboxView();
 
     void poll(Dispatcher &dispatcher) override;
-    void render(const BufferComponent &buffer, const StatusComponent &status) override;
+    void render(const EditorStore &store) override;
 };
 
 } // namespace edit::ui

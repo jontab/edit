@@ -1,5 +1,4 @@
 #include "MockBackend.hpp"
-#include "components/StatusComponent.hpp"
 #include "ui/LayoutEngine.hpp"
 #include "ui/StatusView.hpp"
 #include <gtest/gtest.h>

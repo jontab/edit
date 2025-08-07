@@ -8,27 +8,31 @@ StatusView::StatusView()
 {
 }
 
-void StatusView::render(IViewBackend &backend, const StatusComponent &status, const Rect<unsigned int> &bounds)
+void StatusView::render(IViewBackend &backend,
+    const EditorStore &store,
+    const core::Rect<unsigned int> &bounds,
+    Mode mode)
 {
-    switch (status.mode())
+    switch (mode)
     {
     case Mode::CommandMode:
-        render_command(backend, status, bounds);
+        render_command(backend, store, bounds);
         break;
     default:
-        render_insert_normal(backend, status, bounds);
+        render_insert_normal(backend, store, bounds, mode);
         break;
     }
 }
 
 void StatusView::render_insert_normal(IViewBackend &backend,
-    const StatusComponent &status,
-    const Rect<unsigned int> &bounds)
+    const EditorStore &store,
+    const core::Rect<unsigned int> &bounds,
+    Mode mode)
 {
     std::ostringstream stream;
 
     // Mode.
-    switch (status.mode())
+    switch (mode)
     {
     case Mode::NormalMode:
         stream << "Normal";
@@ -41,35 +45,36 @@ void StatusView::render_insert_normal(IViewBackend &backend,
     }
 
     // Cursor.
+    auto pos = store.buffer().get_cursor_position();
     stream << " | ";
-    stream << "(I:" << status.display_cursor_index() << ",";
-    stream << " Y:" << status.display_cursor_y() << ",";
-    stream << " X:" << status.display_cursor_x() << ")";
+    stream << "(I:" << store.buffer().cursor() << ",";
+    stream << " Y:" << pos.y << ",";
+    stream << " X:" << pos.x << ")";
 
     // Status.
-    if (!status.status().empty())
+    if (!store.status().status().empty())
     {
         stream << " | ";
-        stream << status.status();
+        stream << store.status().status();
     }
 
     backend.put_text(bounds.anchor.y, bounds.anchor.x, stream.str());
 }
 
-void StatusView::render_command(IViewBackend &backend, const StatusComponent &status, const Rect<unsigned int> &bounds)
+void StatusView::render_command(IViewBackend &backend, const EditorStore &store, const core::Rect<unsigned int> &bounds)
 {
-    adjust_camera(status.command_cursor(), bounds);
+    adjust_camera(store.status().command_cursor(), bounds);
 
     // Content.
-    auto show = status.command_content().substr(camera_);
+    auto show = store.status().command_content().substr(camera_);
     backend.put_text(bounds.anchor.y, bounds.anchor.x, show);
 
     // Cursor.
-    auto view_x = status.command_cursor() - camera_;
+    auto view_x = store.status().command_cursor() - camera_;
     backend.set_cursor(bounds.anchor.y, bounds.anchor.x + view_x);
 }
 
-void StatusView::adjust_camera(std::size_t cursor, const Rect<unsigned int> &bounds)
+void StatusView::adjust_camera(std::size_t cursor, const core::Rect<unsigned int> &bounds)
 {
     auto x_left = camera_;                  // Inclusive.
     auto x_right = camera_ + bounds.size.x; // Exclusive.

@@ -3,7 +3,7 @@
 #include <cstddef>
 #include <unordered_map>
 
-namespace edit::ui
+namespace edit::core
 {
 
 template <typename T> struct Point
@@ -22,11 +22,11 @@ template <typename T> struct Point
     }
 };
 
-} // namespace edit::ui
+} // namespace edit::core
 
-template <typename T> struct std::hash<edit::ui::Point<T>>
+template <typename T> struct std::hash<edit::core::Point<T>>
 {
-    std::size_t operator()(const edit::ui::Point<T> &point) const
+    std::size_t operator()(const edit::core::Point<T> &point) const
     {
         return std::hash<unsigned int>()(point.y) ^ (std::hash<unsigned int>()(point.x) << 1);
     }

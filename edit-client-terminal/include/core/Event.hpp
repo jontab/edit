@@ -8,16 +8,6 @@ namespace edit
 {
 
 /**
- * @brief The cursor has already moved.
- */
-struct CursorMovedEvent
-{
-    std::size_t new_index;
-    std::size_t new_y;
-    std::size_t new_x;
-};
-
-/**
  * @brief A key has been pressed.
  */
 struct KeyPressedEvent
@@ -34,13 +24,24 @@ struct CharInsertedEvent
 };
 
 /**
- * @brief The mode has already been changed.
+ * @brief A character has already been deleted.
  */
-struct ModeChangedEvent
+struct CharDeletedEvent
 {
-    Mode to;
+    common::Char ch;
 };
 
-using Event = std::variant<CursorMovedEvent, KeyPressedEvent, CharInsertedEvent, ModeChangedEvent>;
+/**
+ * @brief A command has already been entered.
+ */
+struct CommandEnteredEvent
+{
+    std::string text;
+};
+
+using Event = std::variant<KeyPressedEvent, // Break.
+    CharInsertedEvent,
+    CharDeletedEvent,
+    CommandEnteredEvent>;
 
 } // namespace edit

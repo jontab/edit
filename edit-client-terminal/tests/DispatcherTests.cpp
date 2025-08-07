@@ -35,12 +35,12 @@ TEST(DispatcherTests, PublishesToMultipleSubscribers)
     bool was_event_called_2 = false;
     dispatcher.on_action<edit::CursorUpAction>([&](const auto &) { was_action_called_1 = true; });
     dispatcher.on_action<edit::CursorUpAction>([&](const auto &) { was_action_called_2 = true; });
-    dispatcher.on_event<edit::CursorMovedEvent>([&](const auto &) { was_event_called_1 = true; });
-    dispatcher.on_event<edit::CursorMovedEvent>([&](const auto &) { was_event_called_2 = true; });
+    dispatcher.on_event<edit::CommandEnteredEvent>([&](const auto &) { was_event_called_1 = true; });
+    dispatcher.on_event<edit::CommandEnteredEvent>([&](const auto &) { was_event_called_2 = true; });
 
     // Act.
     dispatcher.dispatch(edit::CursorUpAction{});
-    dispatcher.emit(edit::CursorMovedEvent{});
+    dispatcher.emit(edit::CommandEnteredEvent{":quit"});
 
     // Assert.
     EXPECT_TRUE(was_action_called_1);

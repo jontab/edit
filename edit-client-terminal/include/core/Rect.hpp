@@ -1,8 +1,8 @@
 #pragma once
 
-#include "core/Point.hpp"
+#include "Point.hpp"
 
-namespace edit::ui
+namespace edit::core
 {
 
 template <typename T> struct Rect
@@ -11,4 +11,4 @@ template <typename T> struct Rect
     Point<T> size;
 };
 
-} // namespace edit::ui
+} // namespace edit::core
