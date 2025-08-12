@@ -1,6 +1,7 @@
 #include "ui/StatusView.hpp"
 #include <sstream>
 
+using namespace edit::core;
 using namespace edit::ui;
 
 StatusView::StatusView()
@@ -8,31 +9,27 @@ StatusView::StatusView()
 {
 }
 
-void StatusView::render(IViewBackend &backend,
-    const EditorStore &store,
-    const core::Rect<unsigned int> &bounds,
-    Mode mode)
+void StatusView::render(IViewBackend &backend, const StatusViewSnapshot &snap, const Rect<unsigned int> &bounds)
 {
-    switch (mode)
+    switch (snap.current_mode)
     {
     case Mode::CommandMode:
-        render_command(backend, store, bounds);
+        render_command(backend, snap, bounds);
         break;
     default:
-        render_insert_normal(backend, store, bounds, mode);
+        render_insert_normal(backend, snap, bounds);
         break;
     }
 }
 
 void StatusView::render_insert_normal(IViewBackend &backend,
-    const EditorStore &store,
-    const core::Rect<unsigned int> &bounds,
-    Mode mode)
+    const StatusViewSnapshot &snap,
+    const Rect<unsigned int> &bounds)
 {
     std::ostringstream stream;
 
     // Mode.
-    switch (mode)
+    switch (snap.current_mode)
     {
     case Mode::NormalMode:
         stream << "Normal";
@@ -45,36 +42,35 @@ void StatusView::render_insert_normal(IViewBackend &backend,
     }
 
     // Cursor.
-    auto pos = store.buffer().get_cursor_position();
     stream << " | ";
-    stream << "(I:" << store.buffer().cursor() << ",";
-    stream << " Y:" << pos.y << ",";
-    stream << " X:" << pos.x << ")";
+    stream << "(I:" << snap.buffer_cursor_index << ",";
+    stream << " Y:" << snap.buffer_cursor_y << ",";
+    stream << " X:" << snap.buffer_cursor_x << ")";
 
     // Status.
-    if (!store.status().status().empty())
+    if (!snap.slice.state().status.empty())
     {
         stream << " | ";
-        stream << store.status().status();
+        stream << snap.slice.state().status;
     }
 
     backend.put_text(bounds.anchor.y, bounds.anchor.x, stream.str());
 }
 
-void StatusView::render_command(IViewBackend &backend, const EditorStore &store, const core::Rect<unsigned int> &bounds)
+void StatusView::render_command(IViewBackend &backend, const StatusViewSnapshot &snap, const Rect<unsigned int> &bounds)
 {
-    adjust_camera(store.status().command_cursor(), bounds);
+    adjust_camera(snap.slice.state().command_cursor, bounds);
 
     // Content.
-    auto show = store.status().command_content().substr(camera_);
+    auto show = snap.slice.state().command_content.substr(camera_);
     backend.put_text(bounds.anchor.y, bounds.anchor.x, show);
 
     // Cursor.
-    auto view_x = store.status().command_cursor() - camera_;
+    auto view_x = snap.slice.state().command_cursor - camera_;
     backend.set_cursor(bounds.anchor.y, bounds.anchor.x + view_x);
 }
 
-void StatusView::adjust_camera(std::size_t cursor, const core::Rect<unsigned int> &bounds)
+void StatusView::adjust_camera(std::size_t cursor, const Rect<unsigned int> &bounds)
 {
     auto x_left = camera_;                  // Inclusive.
     auto x_right = camera_ + bounds.size.x; // Exclusive.

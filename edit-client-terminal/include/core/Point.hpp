@@ -22,7 +22,7 @@ template <typename T> struct Point
     }
 };
 
-} // namespace edit::core
+} // namespace edit
 
 template <typename T> struct std::hash<edit::core::Point<T>>
 {

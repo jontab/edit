@@ -15,7 +15,7 @@ void LayoutEngine::resize(unsigned int height, unsigned int width)
     width_ = width;
 }
 
-edit::core::Rect<unsigned int> LayoutEngine::buffer_rect() const
+Rect<unsigned int> LayoutEngine::buffer_rect() const
 {
     if (height_ == 0)
         throw std::runtime_error("Insufficient terminal height");
@@ -25,7 +25,7 @@ edit::core::Rect<unsigned int> LayoutEngine::buffer_rect() const
     };
 }
 
-edit::core::Rect<unsigned int> LayoutEngine::status_rect() const
+Rect<unsigned int> LayoutEngine::status_rect() const
 {
     if (width_ == 0)
         throw std::runtime_error("Insufficient terminal width");

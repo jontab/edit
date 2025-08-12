@@ -1,6 +1,7 @@
 #include "network/BeastNetworkComponent.hpp"
 #include <iostream>
 
+using namespace edit::core;
 using namespace edit::network;
 
 BeastNetworkComponent::BeastNetworkComponent(std::shared_ptr<asio::io_context> ioc)

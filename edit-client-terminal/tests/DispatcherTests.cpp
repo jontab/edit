@@ -1,22 +1,24 @@
 #include "core/Dispatcher.hpp"
 #include <gtest/gtest.h>
 
+using namespace edit::core;
+
 TEST(ActionBusTests, PublishesToMultipleSubscribers)
 {
     // Arrange.
-    edit::ActionBus bus;
+    ActionBus bus;
     bool was_cursor_up_called_1 = false;
     bool was_cursor_up_called_2 = false;
     bool was_cursor_down_called_1 = false;
     bool was_cursor_down_called_2 = false;
-    bus.on<edit::CursorUpAction>([&](const auto &) { was_cursor_up_called_1 = true; });
-    bus.on<edit::CursorUpAction>([&](const auto &) { was_cursor_up_called_2 = true; });
-    bus.on<edit::CursorDownAction>([&](const auto &) { was_cursor_down_called_1 = true; });
-    bus.on<edit::CursorDownAction>([&](const auto &) { was_cursor_down_called_2 = true; });
+    bus.on<CursorUpAction>([&](const auto &) { was_cursor_up_called_1 = true; });
+    bus.on<CursorUpAction>([&](const auto &) { was_cursor_up_called_2 = true; });
+    bus.on<CursorDownAction>([&](const auto &) { was_cursor_down_called_1 = true; });
+    bus.on<CursorDownAction>([&](const auto &) { was_cursor_down_called_2 = true; });
 
     // Act.
-    bus.publish(edit::Action{edit::CursorUpAction{}});
-    bus.publish(edit::Action(edit::CursorDownAction{}));
+    bus.publish(Action{CursorUpAction{}});
+    bus.publish(Action(CursorDownAction{}));
 
     // Assert.
     EXPECT_TRUE(was_cursor_up_called_1);
@@ -28,19 +30,19 @@ TEST(ActionBusTests, PublishesToMultipleSubscribers)
 TEST(DispatcherTests, PublishesToMultipleSubscribers)
 {
     // Arrange.
-    edit::Dispatcher dispatcher;
+    Dispatcher dispatcher;
     bool was_action_called_1 = false;
     bool was_action_called_2 = false;
     bool was_event_called_1 = false;
     bool was_event_called_2 = false;
-    dispatcher.on_action<edit::CursorUpAction>([&](const auto &) { was_action_called_1 = true; });
-    dispatcher.on_action<edit::CursorUpAction>([&](const auto &) { was_action_called_2 = true; });
-    dispatcher.on_event<edit::CommandEnteredEvent>([&](const auto &) { was_event_called_1 = true; });
-    dispatcher.on_event<edit::CommandEnteredEvent>([&](const auto &) { was_event_called_2 = true; });
+    dispatcher.on_action<CursorUpAction>([&](const auto &) { was_action_called_1 = true; });
+    dispatcher.on_action<CursorUpAction>([&](const auto &) { was_action_called_2 = true; });
+    dispatcher.on_event<CommandEnteredEvent>([&](const auto &) { was_event_called_1 = true; });
+    dispatcher.on_event<CommandEnteredEvent>([&](const auto &) { was_event_called_2 = true; });
 
     // Act.
-    dispatcher.dispatch(edit::CursorUpAction{});
-    dispatcher.emit(edit::CommandEnteredEvent{":quit"});
+    dispatcher.dispatch(CursorUpAction{});
+    dispatcher.emit(CommandEnteredEvent{":quit"});
 
     // Assert.
     EXPECT_TRUE(was_action_called_1);

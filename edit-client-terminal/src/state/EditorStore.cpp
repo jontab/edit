@@ -1,6 +1,9 @@
 #include "state/EditorStore.hpp"
 
-edit::EditorStore::EditorStore(Dispatcher &dispatcher)
+using namespace edit::core;
+using namespace edit::state;
+
+EditorStore::EditorStore(Dispatcher &dispatcher)
     : dispatcher_(dispatcher)
     , buffer_()
     , mode_()
@@ -20,24 +23,25 @@ edit::EditorStore::EditorStore(Dispatcher &dispatcher)
     dispatcher.on_action<CursorDownAction>([this](const auto &a) { reduce(a); });
     dispatcher.on_action<CursorLeftAction>([this](const auto &a) { reduce(a); });
     dispatcher.on_action<CursorRightAction>([this](const auto &a) { reduce(a); });
+    dispatcher.on_action<ChangeStatusAction>([this](const auto &a) { reduce(a); });
 }
 
-const edit::BufferSlice &edit::EditorStore::buffer() const
+const BufferSlice &EditorStore::buffer() const
 {
     return buffer_;
 }
 
-const edit::ModeSlice &edit::EditorStore::mode() const
+const ModeSlice &EditorStore::mode() const
 {
     return mode_;
 }
 
-const edit::StatusSlice &edit::EditorStore::status() const
+const StatusSlice &EditorStore::status() const
 {
     return status_;
 }
 
-void edit::EditorStore::reduce(const InsertAction &a)
+void EditorStore::reduce(const InsertAction &a)
 {
     switch (mode_.mode())
     {
@@ -53,7 +57,7 @@ void edit::EditorStore::reduce(const InsertAction &a)
     }
 }
 
-void edit::EditorStore::reduce(const DeleteAction &a)
+void EditorStore::reduce(const DeleteAction &a)
 {
     switch (mode_.mode())
     {
@@ -69,7 +73,7 @@ void edit::EditorStore::reduce(const DeleteAction &a)
     }
 }
 
-void edit::EditorStore::reduce(const BackspaceAction &a)
+void EditorStore::reduce(const BackspaceAction &a)
 {
     switch (mode_.mode())
     {
@@ -85,7 +89,7 @@ void edit::EditorStore::reduce(const BackspaceAction &a)
     }
 }
 
-void edit::EditorStore::reduce(const CursorUpAction &a)
+void EditorStore::reduce(const CursorUpAction &a)
 {
     if (mode_.mode() == Mode::InsertMode)
     {
@@ -93,7 +97,7 @@ void edit::EditorStore::reduce(const CursorUpAction &a)
     }
 }
 
-void edit::EditorStore::reduce(const CursorDownAction &a)
+void EditorStore::reduce(const CursorDownAction &a)
 {
     if (mode_.mode() == Mode::InsertMode)
     {
@@ -101,7 +105,7 @@ void edit::EditorStore::reduce(const CursorDownAction &a)
     }
 }
 
-void edit::EditorStore::reduce(const CursorLeftAction &a)
+void EditorStore::reduce(const CursorLeftAction &a)
 {
     switch (mode_.mode())
     {
@@ -116,7 +120,7 @@ void edit::EditorStore::reduce(const CursorLeftAction &a)
     }
 }
 
-void edit::EditorStore::reduce(const CursorRightAction &a)
+void EditorStore::reduce(const CursorRightAction &a)
 {
     switch (mode_.mode())
     {
@@ -129,4 +133,9 @@ void edit::EditorStore::reduce(const CursorRightAction &a)
     default:
         break;
     }
+}
+
+void EditorStore::reduce(const ChangeStatusAction &a)
+{
+    status_.reduce(a);
 }

@@ -3,6 +3,7 @@
 #include "ui/TermboxBackend.hpp"
 #include "termbox2.h"
 
+using namespace edit::core;
 using namespace edit::ui;
 
 TermboxBackend::TermboxBackend()
@@ -99,42 +100,42 @@ void TermboxBackend::on_key(const struct tb_event &ev, Dispatcher &dispatcher)
 {
     if (!ev.mod && !ev.key && isprint(ev.ch))
     {
-        dispatcher.emit(edit::KeyPressedEvent{ev.ch});
-        dispatcher.dispatch(edit::CursorRightAction{});
+        dispatcher.emit(KeyPressedEvent{ev.ch});
+        dispatcher.dispatch(CursorRightAction{});
         return;
     }
 
     switch (ev.key)
     {
     case TB_KEY_ENTER:
-        dispatcher.emit(edit::KeyPressedEvent{'\n'});
-        dispatcher.dispatch(edit::CursorRightAction{});
+        dispatcher.emit(KeyPressedEvent{'\n'});
+        dispatcher.dispatch(CursorRightAction{});
         return;
     case TB_KEY_TAB:
-        dispatcher.emit(edit::KeyPressedEvent{'\t'});
-        dispatcher.dispatch(edit::CursorRightAction{});
+        dispatcher.emit(KeyPressedEvent{'\t'});
+        dispatcher.dispatch(CursorRightAction{});
         return;
     case TB_KEY_ARROW_UP:
-        dispatcher.dispatch(edit::CursorUpAction{});
+        dispatcher.dispatch(CursorUpAction{});
         return;
     case TB_KEY_ARROW_DOWN:
-        dispatcher.dispatch(edit::CursorDownAction{});
+        dispatcher.dispatch(CursorDownAction{});
         return;
     case TB_KEY_ARROW_LEFT:
-        dispatcher.dispatch(edit::CursorLeftAction{});
+        dispatcher.dispatch(CursorLeftAction{});
         return;
     case TB_KEY_ARROW_RIGHT:
-        dispatcher.dispatch(edit::CursorRightAction{});
+        dispatcher.dispatch(CursorRightAction{});
         return;
     case TB_KEY_DELETE:
-        dispatcher.dispatch(edit::DeleteAction{});
+        dispatcher.dispatch(DeleteAction{});
         return;
     case TB_KEY_BACKSPACE:
     case TB_KEY_BACKSPACE2:
-        dispatcher.dispatch(edit::BackspaceAction{});
+        dispatcher.dispatch(BackspaceAction{});
         return;
     case TB_KEY_ESC:
-        dispatcher.dispatch(edit::EscapeAction{});
+        dispatcher.dispatch(EscapeAction{});
         break;
     default:
         break;

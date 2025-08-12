@@ -7,6 +7,10 @@
 #include <boost/asio.hpp>
 #include <iostream>
 
+using namespace edit::core;
+using namespace edit::network;
+using namespace edit::ui;
+
 int edit::Bootstrap::run(int argc, char **argv)
 {
     Args args(argc, argv);
@@ -15,7 +19,7 @@ int edit::Bootstrap::run(int argc, char **argv)
     auto dispatcher = std::make_unique<Dispatcher>();
 
     // `INetworkComponent`.
-    auto network_component = std::make_shared<edit::network::BeastNetworkComponent>(ioc);
+    auto network_component = std::make_shared<BeastNetworkComponent>(ioc);
     if (!args.docid.empty())
     {
         std::cout << "Connecting to " << args.host << ":" << args.port << ". Please wait." << std::endl;
@@ -32,7 +36,7 @@ int edit::Bootstrap::run(int argc, char **argv)
     network_component->bind(*dispatcher);
 
     // `IView`.
-    auto view = std::make_unique<edit::ui::TermboxView>();
+    auto view = std::make_unique<TermboxView>();
     try
     {
         edit::Editor editor{ioc, std::move(dispatcher), network_component, std::move(view)};

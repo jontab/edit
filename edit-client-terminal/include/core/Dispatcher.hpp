@@ -2,7 +2,7 @@
 
 #include "Bus.hpp"
 
-namespace edit
+namespace edit::core
 {
 
 class Dispatcher
@@ -38,4 +38,4 @@ class Dispatcher
     }
 };
 
-} // namespace edit
+} // namespace edit::core

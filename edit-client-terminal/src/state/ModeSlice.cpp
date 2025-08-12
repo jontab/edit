@@ -1,11 +1,14 @@
 #include "state/ModeSlice.hpp"
 
-void edit::ModeSlice::reduce(const ChangeModeAction &a)
+using namespace edit::core;
+using namespace edit::state;
+
+void ModeSlice::reduce(const ChangeModeAction &a)
 {
     s_.mode = a.to;
 }
 
-void edit::ModeSlice::reduce(const EscapeAction &a)
+void ModeSlice::reduce(const EscapeAction &a)
 {
     switch (s_.mode)
     {
@@ -18,7 +21,7 @@ void edit::ModeSlice::reduce(const EscapeAction &a)
     }
 }
 
-edit::Mode edit::ModeSlice::mode() const
+Mode ModeSlice::mode() const
 {
     return s_.mode;
 }

@@ -5,7 +5,7 @@
 #include "core/Point.hpp"
 #include "state/BufferState.hpp"
 
-namespace edit
+namespace edit::state
 {
 
 class BufferSlice
@@ -17,25 +17,25 @@ class BufferSlice
     BufferSlice(const std::vector<common::Char> &chars);
     BufferSlice(std::vector<common::Char> &&chars);
 
+    const BufferState &state() const;
+
     // Reduce.
-    void reduce(const CursorUpAction &a);
-    void reduce(const CursorDownAction &a);
-    void reduce(const CursorLeftAction &a);
-    void reduce(const CursorRightAction &a);
-    CharInsertedEvent reduce(const InsertAction &a);
-    std::optional<CharDeletedEvent> reduce(const DeleteAction &a);
-    std::optional<CharDeletedEvent> reduce(const BackspaceAction &a);
+    void reduce(const edit::core::CursorUpAction &a);
+    void reduce(const edit::core::CursorDownAction &a);
+    void reduce(const edit::core::CursorLeftAction &a);
+    void reduce(const edit::core::CursorRightAction &a);
+    edit::core::CharInsertedEvent reduce(const edit::core::InsertAction &a);
+    std::optional<edit::core::CharDeletedEvent> reduce(const edit::core::DeleteAction &a);
+    std::optional<edit::core::CharDeletedEvent> reduce(const edit::core::BackspaceAction &a);
 
     // Other.
     void set_cursor_index(std::size_t index);
     std::size_t cursor() const;
     int site() const;
     std::size_t get_cursor_y() const;
-    core::Point<std::size_t> get_cursor_position() const;
+    edit::core::Point<std::size_t> get_cursor_position() const;
     std::size_t line_count() const;
     std::size_t line_length(std::size_t y) const;
-    std::vector<common::Char>::const_iterator line_begin(std::size_t y) const;
-    std::vector<common::Char>::const_iterator line_end(std::size_t y) const;
 
   private:
     void calculate_lines();
@@ -47,4 +47,4 @@ class BufferSlice
     bool is_y_at_bottom(std::size_t y) const;
 };
 
-} // namespace edit
+} // namespace edit::state

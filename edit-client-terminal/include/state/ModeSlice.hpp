@@ -3,21 +3,20 @@
 #include "core/Action.hpp"
 #include "state/ModeState.hpp"
 
-namespace edit
+namespace edit::state
 {
 
 class ModeSlice
 {
+    ModeState s_;
+
   public:
     // Reduce.
-    void reduce(const ChangeModeAction &a);
-    void reduce(const EscapeAction &a);
+    void reduce(const edit::core::ChangeModeAction &a);
+    void reduce(const edit::core::EscapeAction &a);
 
     // Other.
-    Mode mode() const;
-
-  private:
-    ModeState s_;
+    edit::core::Mode mode() const;
 };
 
-} // namespace edit
+} // namespace edit::state

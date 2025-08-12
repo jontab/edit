@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/Rect.hpp"
+#include "Rect.hpp"
 
 namespace edit::ui
 {
@@ -17,8 +17,8 @@ class LayoutEngine
     LayoutEngine(unsigned int height, unsigned int width);
 
     void resize(unsigned int height, unsigned int width);
-    core::Rect<unsigned int> buffer_rect() const;
-    core::Rect<unsigned int> status_rect() const;
+    Rect<unsigned int> buffer_rect() const;
+    Rect<unsigned int> status_rect() const;
 };
 
 } // namespace edit::ui

@@ -4,11 +4,16 @@
 
 using namespace edit;
 
-Args::Args() : host("localhost"), port("443"), docid(""), apikey("")
+Args::Args()
+    : host("localhost")
+    , port("443")
+    , docid("")
+    , apikey("")
 {
 }
 
-Args::Args(int argc, char **argv) : Args()
+Args::Args(int argc, char **argv)
+    : Args()
 {
     parse(argc, argv);
 }

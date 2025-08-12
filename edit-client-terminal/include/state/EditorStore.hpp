@@ -5,31 +5,32 @@
 #include "StatusSlice.hpp"
 #include "core/Dispatcher.hpp"
 
-namespace edit
+namespace edit::state
 {
 
 class EditorStore
 {
-    Dispatcher &dispatcher_;
+    edit::core::Dispatcher &dispatcher_;
     BufferSlice buffer_;
     ModeSlice mode_;
     StatusSlice status_;
 
   public:
-    EditorStore(Dispatcher &dispatcher);
+    EditorStore(edit::core::Dispatcher &dispatcher);
 
     const BufferSlice &buffer() const;
     const ModeSlice &mode() const;
     const StatusSlice &status() const;
 
   private:
-    void reduce(const InsertAction &a);
-    void reduce(const DeleteAction &a);
-    void reduce(const BackspaceAction &a);
-    void reduce(const CursorUpAction &a);
-    void reduce(const CursorDownAction &a);
-    void reduce(const CursorLeftAction &a);
-    void reduce(const CursorRightAction &a);
+    void reduce(const edit::core::InsertAction &a);
+    void reduce(const edit::core::DeleteAction &a);
+    void reduce(const edit::core::BackspaceAction &a);
+    void reduce(const edit::core::CursorUpAction &a);
+    void reduce(const edit::core::CursorDownAction &a);
+    void reduce(const edit::core::CursorLeftAction &a);
+    void reduce(const edit::core::CursorRightAction &a);
+    void reduce(const edit::core::ChangeStatusAction &a);
 };
 
-} // namespace edit
+} // namespace edit::state

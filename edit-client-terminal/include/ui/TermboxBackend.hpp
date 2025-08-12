@@ -20,10 +20,11 @@ class TermboxBackend : public IViewBackend
     void set_cursor(unsigned int y, unsigned int x) override;
     unsigned int height() override;
     unsigned int width() override;
-    void poll(Dispatcher &dispatcher, const std::function<void(unsigned int, unsigned int)> &on_resize) override;
+    void poll(edit::core::Dispatcher &dispatcher,
+        const std::function<void(unsigned int, unsigned int)> &on_resize) override;
 
   private:
-    void on_key(const struct tb_event &ev, Dispatcher &dispatcher);
+    void on_key(const struct tb_event &ev, edit::core::Dispatcher &dispatcher);
 };
 
 } // namespace edit::ui

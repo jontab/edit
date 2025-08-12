@@ -5,7 +5,7 @@
 #include <string>
 #include <variant>
 
-namespace edit
+namespace edit::core
 {
 
 /**
@@ -88,6 +88,14 @@ struct CursorRightAction
 {
 };
 
+/**
+ * @brief Request to change status message.
+ */
+struct ChangeStatusAction
+{
+    std::string message;
+};
+
 using Action = std::variant<QuitAction, // Break.
     EscapeAction,
     CommandAction,
@@ -98,6 +106,7 @@ using Action = std::variant<QuitAction, // Break.
     CursorUpAction,
     CursorDownAction,
     CursorLeftAction,
-    CursorRightAction>;
+    CursorRightAction,
+    ChangeStatusAction>;
 
-} // namespace edit
+} // namespace edit::core

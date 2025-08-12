@@ -1,23 +1,22 @@
 #include "ui/BufferView.hpp"
 
-edit::ui::BufferView::BufferView()
+using namespace edit::core;
+using namespace edit::ui;
+
+BufferView::BufferView()
     : camera_({0, 0})
 {
 }
 
-void edit::ui::BufferView::render(IViewBackend &backend,
-    const BufferSlice &buffer,
-    const core::Rect<unsigned int> &bounds,
-    Mode mode)
+void BufferView::render(IViewBackend &backend, const BufferViewSnapshot &snap, const Rect<unsigned int> &bounds)
 {
-    auto cursor = buffer.get_cursor_position();
-    adjust_camera_y(cursor.y, bounds);
-    adjust_camera_x(cursor.x, bounds);
-    render_lines(backend, buffer, bounds);
-    render_cursor(backend, buffer, bounds, mode);
+    adjust_camera_y(snap.cursor_y, bounds);
+    adjust_camera_x(snap.cursor_x, bounds);
+    render_lines(backend, snap, bounds);
+    render_cursor(backend, snap, bounds);
 }
 
-void edit::ui::BufferView::adjust_camera_y(std::size_t cursor_y, const core::Rect<unsigned int> &bounds)
+void BufferView::adjust_camera_y(std::size_t cursor_y, const Rect<unsigned int> &bounds)
 {
     auto y_top = camera_.y;                    // Inclusive.
     auto y_bottom = camera_.y + bounds.size.y; // Exclusive.
@@ -35,7 +34,7 @@ void edit::ui::BufferView::adjust_camera_y(std::size_t cursor_y, const core::Rec
     }
 }
 
-void edit::ui::BufferView::adjust_camera_x(std::size_t cursor_x, const core::Rect<unsigned int> &bounds)
+void BufferView::adjust_camera_x(std::size_t cursor_x, const Rect<unsigned int> &bounds)
 {
     auto x_left = camera_.x;                  // Inclusive.
     auto x_right = camera_.x + bounds.size.x; // Exclusive.
@@ -53,9 +52,7 @@ void edit::ui::BufferView::adjust_camera_x(std::size_t cursor_x, const core::Rec
     }
 }
 
-void edit::ui::BufferView::render_lines(IViewBackend &backend,
-    const BufferSlice &buffer,
-    const core::Rect<unsigned int> &bounds)
+void BufferView::render_lines(IViewBackend &backend, const BufferViewSnapshot &snap, const Rect<unsigned int> &bounds)
 {
     for (unsigned int view_y = 0; view_y < bounds.size.y; view_y++)
     {
@@ -66,7 +63,9 @@ void edit::ui::BufferView::render_lines(IViewBackend &backend,
             .view_x = 0,
             .view_camera_remaining = camera_.x,
         };
-        for (auto it = buffer.line_begin(camera_.y + view_y); it < buffer.line_end(camera_.y + view_y); it++)
+        for (auto it = snap.slice.state().line_begin(camera_.y + view_y);
+            it < snap.slice.state().line_end(camera_.y + view_y);
+            it++)
         {
             if (!it->is_deleted)
             {
@@ -79,18 +78,10 @@ void edit::ui::BufferView::render_lines(IViewBackend &backend,
     }
 }
 
-void edit::ui::BufferView::render_cursor(IViewBackend &backend,
-    const BufferSlice &buffer,
-    const core::Rect<unsigned int> &bounds,
-    Mode mode)
+void BufferView::render_cursor(IViewBackend &backend, const BufferViewSnapshot &snap, const Rect<unsigned int> &bounds)
 {
-    auto cursor = buffer.get_cursor_position();
-    DrawCursorContext ctx{
-        .bounds = bounds,
-        .view_x = 0,
-        .x = cursor.x,
-    };
-    for (auto it = buffer.line_begin(cursor.y); it < buffer.line_end(cursor.y); it++)
+    DrawCursorContext ctx{.bounds = bounds, .view_x = 0, .x = snap.cursor_x};
+    for (auto it = snap.slice.state().line_begin(snap.cursor_y); it < snap.slice.state().line_end(snap.cursor_y); it++)
     {
         if (!it->is_deleted)
         {
@@ -101,10 +92,10 @@ void edit::ui::BufferView::render_cursor(IViewBackend &backend,
         }
     }
 
-    if ((mode == Mode::InsertMode) || (mode == Mode::NormalMode))
+    if ((snap.current_mode == Mode::InsertMode) || (snap.current_mode == Mode::NormalMode))
     {
         // Cursor.
-        auto view_y = cursor.y - camera_.y;
+        auto view_y = snap.cursor_y - camera_.y;
         auto view_x = ctx.view_x - camera_.x;
         if ((view_y < static_cast<std::size_t>(bounds.size.y)) && (view_x < static_cast<std::size_t>(bounds.size.x)))
         {
@@ -113,7 +104,7 @@ void edit::ui::BufferView::render_cursor(IViewBackend &backend,
     }
 }
 
-bool edit::ui::BufferView::render_line_callback(std::uint32_t ch, DrawLineContext &ctx)
+bool BufferView::render_line_callback(std::uint32_t ch, DrawLineContext &ctx)
 {
     if (ch == '\t')
     {
@@ -131,7 +122,7 @@ bool edit::ui::BufferView::render_line_callback(std::uint32_t ch, DrawLineContex
     return true;
 }
 
-bool edit::ui::BufferView::render_line_callback_put(std::uint32_t ch, struct DrawLineContext &ctx)
+bool BufferView::render_line_callback_put(std::uint32_t ch, struct DrawLineContext &ctx)
 {
     bool is_before = ctx.view_camera_remaining > 0;
     bool is_after = ctx.view_x >= ctx.bounds.size.x;
@@ -154,7 +145,7 @@ bool edit::ui::BufferView::render_line_callback_put(std::uint32_t ch, struct Dra
     }
 }
 
-bool edit::ui::BufferView::render_cursor_callback(std::uint32_t ch, DrawCursorContext &ctx)
+bool BufferView::render_cursor_callback(std::uint32_t ch, DrawCursorContext &ctx)
 {
     if (ctx.x > 0)
     {
@@ -168,7 +159,7 @@ bool edit::ui::BufferView::render_cursor_callback(std::uint32_t ch, DrawCursorCo
     }
 }
 
-int edit::ui::BufferView::calculate_tab_count(std::size_t view_x)
+int BufferView::calculate_tab_count(std::size_t view_x)
 {
     return 4 - static_cast<int>(view_x % 4);
 }

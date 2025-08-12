@@ -10,8 +10,8 @@ class IView
   public:
     virtual ~IView() = default;
 
-    virtual void poll(Dispatcher &dispatcher) = 0;
-    virtual void render(const EditorStore &store) = 0;
+    virtual void poll(edit::core::Dispatcher &dispatcher) = 0;
+    virtual void render(const edit::state::EditorStore &store) = 0;
 };
 
 } // namespace edit::ui

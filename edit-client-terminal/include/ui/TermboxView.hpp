@@ -20,8 +20,8 @@ class TermboxView : public IView
   public:
     TermboxView();
 
-    void poll(Dispatcher &dispatcher) override;
-    void render(const EditorStore &store) override;
+    void poll(edit::core::Dispatcher &dispatcher) override;
+    void render(const edit::state::EditorStore &store) override;
 };
 
 } // namespace edit::ui

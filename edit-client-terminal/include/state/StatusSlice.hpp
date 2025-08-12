@@ -1,10 +1,10 @@
 #pragma once
 
-#include "state/StatusState.hpp"
 #include "core/Event.hpp"
+#include "state/StatusState.hpp"
 #include <optional>
 
-namespace edit
+namespace edit::state
 {
 
 class StatusSlice
@@ -14,18 +14,18 @@ class StatusSlice
   public:
     StatusSlice();
 
+    const StatusState &state() const;
+
     // Reduce.
-    void reduce(const CursorLeftAction &a);
-    void reduce(const CursorRightAction &a);
-    std::optional<CommandEnteredEvent> reduce(const InsertAction &a);
-    void reduce(const DeleteAction &a);
-    void reduce(const BackspaceAction &a);
+    void reduce(const edit::core::CursorLeftAction &a);
+    void reduce(const edit::core::CursorRightAction &a);
+    std::optional<edit::core::CommandEnteredEvent> reduce(const edit::core::InsertAction &a);
+    void reduce(const edit::core::DeleteAction &a);
+    void reduce(const edit::core::BackspaceAction &a);
+    void reduce(const edit::core::ChangeStatusAction &a);
 
     // Other.
     void reset_command();
-    const std::string &status() const;
-    std::size_t command_cursor() const;
-    const std::string &command_content() const;
 };
 
-} // namespace edit
+} // namespace edit::state

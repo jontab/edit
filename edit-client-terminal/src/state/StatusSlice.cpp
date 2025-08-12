@@ -1,28 +1,36 @@
 #include "state/StatusSlice.hpp"
 
-edit::StatusSlice::StatusSlice()
+using namespace edit::core;
+using namespace edit::state;
+
+StatusSlice::StatusSlice()
     : s_()
 {
     reset_command();
+}
+
+const StatusState &StatusSlice::state() const
+{
+    return s_;
 }
 
 /******************************************************************************/
 /* Reduce                                                                     */
 /******************************************************************************/
 
-void edit::StatusSlice::reduce(const CursorLeftAction &a)
+void StatusSlice::reduce(const CursorLeftAction &a)
 {
     if (s_.command_cursor > 0)
         s_.command_cursor--;
 }
 
-void edit::StatusSlice::reduce(const CursorRightAction &a)
+void StatusSlice::reduce(const CursorRightAction &a)
 {
     if (s_.command_cursor < s_.command_content.length())
         s_.command_cursor = s_.command_content.length();
 }
 
-std::optional<edit::CommandEnteredEvent> edit::StatusSlice::reduce(const InsertAction &a)
+std::optional<CommandEnteredEvent> StatusSlice::reduce(const InsertAction &a)
 {
     if (auto ch = static_cast<char>(a.ch); ch == '\n')
     {
@@ -40,7 +48,7 @@ std::optional<edit::CommandEnteredEvent> edit::StatusSlice::reduce(const InsertA
     return std::nullopt;
 }
 
-void edit::StatusSlice::reduce(const DeleteAction &a)
+void StatusSlice::reduce(const DeleteAction &a)
 {
     auto l_end = s_.command_cursor;     // Excludes `command_cursor`.
     auto r_beg = s_.command_cursor + 1; // Excludes `command_cursor`.
@@ -49,7 +57,7 @@ void edit::StatusSlice::reduce(const DeleteAction &a)
     s_.command_content = l + r;
 }
 
-void edit::StatusSlice::reduce(const BackspaceAction &a)
+void StatusSlice::reduce(const BackspaceAction &a)
 {
     if (s_.command_cursor > 0)
     {
@@ -58,27 +66,17 @@ void edit::StatusSlice::reduce(const BackspaceAction &a)
     }
 }
 
+void StatusSlice::reduce(const ChangeStatusAction &a)
+{
+    s_.status = a.message;
+}
+
 /******************************************************************************/
 /* Other                                                                      */
 /******************************************************************************/
 
-void edit::StatusSlice::reset_command()
+void StatusSlice::reset_command()
 {
     s_.command_content = ":";
     s_.command_cursor = 1;
-}
-
-const std::string &edit::StatusSlice::status() const
-{
-    return s_.status;
-}
-
-std::size_t edit::StatusSlice::command_cursor() const
-{
-    return s_.command_cursor;
-}
-
-const std::string &edit::StatusSlice::command_content() const
-{
-    return s_.command_content;
 }

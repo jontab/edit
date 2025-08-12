@@ -2,7 +2,7 @@
 
 #include <edit-common/Buffer.hpp>
 
-namespace edit
+namespace edit::state
 {
 
 struct BufferState
@@ -13,34 +13,17 @@ struct BufferState
         std::size_t end;
     };
 
-    common::Buffer buffer;
+    edit::common::Buffer buffer;
     std::vector<Line> lines;
     std::size_t cursor;
     int site;
 
-    inline BufferState()
-        : buffer()
-        , lines()
-        , cursor()
-        , site(rand())
-    {
-    }
+    BufferState();
+    BufferState(const std::vector<common::Char> &chars);
+    BufferState(std::vector<common::Char> &&chars);
 
-    inline BufferState(const std::vector<common::Char> &chars)
-        : buffer(chars)
-        , lines()
-        , cursor()
-        , site(rand())
-    {
-    }
-
-    inline BufferState(std::vector<common::Char> &&chars)
-        : buffer(std::move(chars))
-        , lines()
-        , cursor()
-        , site(rand())
-    {
-    }
+    std::vector<common::Char>::const_iterator line_begin(std::size_t y) const;
+    std::vector<common::Char>::const_iterator line_end(std::size_t y) const;
 };
 
-} // namespace edit
+} // namespace edit::state

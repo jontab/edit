@@ -2,12 +2,12 @@
 
 #include "core/Mode.hpp"
 
-namespace edit
+namespace edit::state
 {
 
 struct ModeState
 {
-    Mode mode = Mode::NormalMode;
+    edit::core::Mode mode = edit::core::Mode::NormalMode;
 };
 
 } // namespace edit

@@ -1,6 +1,6 @@
 #pragma once
 
-namespace edit
+namespace edit::core
 {
 
 enum Mode

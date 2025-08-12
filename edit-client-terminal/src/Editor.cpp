@@ -1,9 +1,13 @@
 #include "Editor.hpp"
 
+using namespace edit::core;
+using namespace edit::network;
+using namespace edit::ui;
+
 edit::Editor::Editor(std::shared_ptr<boost::asio::io_context> ioc,
     std::unique_ptr<Dispatcher> &&dispatcher,
-    std::shared_ptr<edit::network::INetworkComponent> network_component,
-    std::unique_ptr<ui::IView> &&view)
+    std::shared_ptr<INetworkComponent> network_component,
+    std::unique_ptr<IView> &&view)
     : ioc_(ioc)
     , dispatcher_(std::move(dispatcher))
     , network_component_(network_component)

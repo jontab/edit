@@ -2,7 +2,7 @@
 
 #include "core/Action.hpp"
 
-namespace edit
+namespace edit::state
 {
 
 struct StatusState
@@ -12,4 +12,4 @@ struct StatusState
     std::string command_content;
 };
 
-} // namespace edit
+} // namespace edit::state

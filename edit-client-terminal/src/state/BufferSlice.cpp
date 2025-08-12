@@ -1,28 +1,36 @@
 #include "state/BufferSlice.hpp"
 
-edit::BufferSlice::BufferSlice()
+using namespace edit::core;
+using namespace edit::state;
+
+BufferSlice::BufferSlice()
     : s_()
 {
     calculate_lines();
 }
 
-edit::BufferSlice::BufferSlice(const std::vector<common::Char> &chars)
+BufferSlice::BufferSlice(const std::vector<common::Char> &chars)
     : s_(chars)
 {
     calculate_lines();
 }
 
-edit::BufferSlice::BufferSlice(std::vector<common::Char> &&chars)
+BufferSlice::BufferSlice(std::vector<common::Char> &&chars)
     : s_(std::move(chars))
 {
     calculate_lines();
+}
+
+const BufferState &BufferSlice::state() const
+{
+    return s_;
 }
 
 /******************************************************************************/
 /* Reduce                                                                     */
 /******************************************************************************/
 
-void edit::BufferSlice::reduce(const CursorUpAction &a)
+void BufferSlice::reduce(const CursorUpAction &a)
 {
     auto y = get_cursor_y();
     if (!is_y_at_top(y))
@@ -32,7 +40,7 @@ void edit::BufferSlice::reduce(const CursorUpAction &a)
     }
 }
 
-void edit::BufferSlice::reduce(const CursorDownAction &a)
+void BufferSlice::reduce(const CursorDownAction &a)
 {
     auto y = get_cursor_y();
     if (!is_y_at_bottom(y))
@@ -42,12 +50,12 @@ void edit::BufferSlice::reduce(const CursorDownAction &a)
     }
 }
 
-void edit::BufferSlice::reduce(const CursorLeftAction &a)
+void BufferSlice::reduce(const CursorLeftAction &a)
 {
     s_.cursor = next_visible_before(s_.cursor);
 }
 
-void edit::BufferSlice::reduce(const CursorRightAction &a)
+void BufferSlice::reduce(const CursorRightAction &a)
 {
     if (s_.cursor >= s_.buffer.size())
     {
@@ -69,7 +77,7 @@ void edit::BufferSlice::reduce(const CursorRightAction &a)
     }
 }
 
-edit::CharInsertedEvent edit::BufferSlice::reduce(const InsertAction &a)
+CharInsertedEvent BufferSlice::reduce(const InsertAction &a)
 {
     int parent_clock = 0;
     int parent_site = -1;
@@ -79,7 +87,7 @@ edit::CharInsertedEvent edit::BufferSlice::reduce(const InsertAction &a)
         parent_site = s_.buffer[s_.cursor - 1].site;
     }
 
-    edit::common::Char ch{
+    common::Char ch{
         .parent_clock = parent_clock,
         .parent_site = parent_site,
         .clock = s_.buffer.clock() + 1,
@@ -92,7 +100,7 @@ edit::CharInsertedEvent edit::BufferSlice::reduce(const InsertAction &a)
     return CharInsertedEvent{ch};
 }
 
-std::optional<edit::CharDeletedEvent> edit::BufferSlice::reduce(const DeleteAction &a)
+std::optional<CharDeletedEvent> BufferSlice::reduce(const DeleteAction &a)
 {
     if (s_.cursor >= s_.buffer.size())
     {
@@ -118,7 +126,7 @@ std::optional<edit::CharDeletedEvent> edit::BufferSlice::reduce(const DeleteActi
     return std::nullopt;
 }
 
-std::optional<edit::CharDeletedEvent> edit::BufferSlice::reduce(const BackspaceAction &a)
+std::optional<CharDeletedEvent> BufferSlice::reduce(const BackspaceAction &a)
 {
     if (s_.cursor > 0)
     {
@@ -135,22 +143,22 @@ std::optional<edit::CharDeletedEvent> edit::BufferSlice::reduce(const BackspaceA
 /* Other                                                                      */
 /******************************************************************************/
 
-void edit::BufferSlice::set_cursor_index(std::size_t index)
+void BufferSlice::set_cursor_index(std::size_t index)
 {
     s_.cursor = std::min(index, s_.buffer.size());
 }
 
-std::size_t edit::BufferSlice::cursor() const
+std::size_t BufferSlice::cursor() const
 {
     return s_.cursor;
 }
 
-int edit::BufferSlice::site() const
+int BufferSlice::site() const
 {
     return s_.site;
 }
 
-std::size_t edit::BufferSlice::get_cursor_y() const
+std::size_t BufferSlice::get_cursor_y() const
 {
     std::size_t l = 0;
     std::size_t r = s_.lines.size() - 1;
@@ -178,19 +186,19 @@ std::size_t edit::BufferSlice::get_cursor_y() const
  * @brief Return cursor position as a coordinate.
  * @return Coordinate.
  */
-edit::core::Point<std::size_t> edit::BufferSlice::get_cursor_position() const
+Point<std::size_t> BufferSlice::get_cursor_position() const
 {
     auto y = get_cursor_y();
     auto x = calculate_x(s_.lines[y], s_.cursor);
-    return edit::core::Point<std::size_t>{y, x};
+    return Point<std::size_t>{y, x};
 }
 
-std::size_t edit::BufferSlice::line_count() const
+std::size_t BufferSlice::line_count() const
 {
     return s_.lines.size();
 }
 
-std::size_t edit::BufferSlice::line_length(std::size_t y) const
+std::size_t BufferSlice::line_length(std::size_t y) const
 {
     if (y < s_.lines.size())
     {
@@ -202,30 +210,6 @@ std::size_t edit::BufferSlice::line_length(std::size_t y) const
     }
 }
 
-std::vector<edit::common::Char>::const_iterator edit::BufferSlice::line_begin(std::size_t y) const
-{
-    if (y < s_.lines.size())
-    {
-        return s_.buffer.begin() + s_.lines[y].begin;
-    }
-    else
-    {
-        return s_.buffer.end();
-    }
-}
-
-std::vector<edit::common::Char>::const_iterator edit::BufferSlice::line_end(std::size_t y) const
-{
-    if (y < s_.lines.size())
-    {
-        return s_.buffer.begin() + s_.lines[y].end;
-    }
-    else
-    {
-        return s_.buffer.end();
-    }
-}
-
 /**
  * @brief Re-index the lines in this buffer.
  *
@@ -234,7 +218,7 @@ std::vector<edit::common::Char>::const_iterator edit::BufferSlice::line_end(std:
  *
  * These rules allow the cursor to hover over the '\\n' or `EOF`. The lines in the buffer are disjoint.
  */
-void edit::BufferSlice::calculate_lines()
+void BufferSlice::calculate_lines()
 {
     s_.lines.clear();
     std::size_t begin = 0;
@@ -257,7 +241,7 @@ void edit::BufferSlice::calculate_lines()
  * @param index Character.
  * @return What `nth` visible character this is.
  */
-std::size_t edit::BufferSlice::calculate_x(const BufferState::Line &line, std::size_t index) const
+std::size_t BufferSlice::calculate_x(const BufferState::Line &line, std::size_t index) const
 {
     auto range_begin = s_.buffer.begin() + line.begin;
     auto range_end = s_.buffer.begin() + index;
@@ -270,7 +254,7 @@ std::size_t edit::BufferSlice::calculate_x(const BufferState::Line &line, std::s
  * @param count `nth` visible character.
  * @return Index into buffer.
  */
-std::size_t edit::BufferSlice::calculate_x_index(const BufferState::Line &line, std::size_t count) const
+std::size_t BufferSlice::calculate_x_index(const BufferState::Line &line, std::size_t count) const
 {
     for (std::size_t i = line.begin; i < line.end; i++)
         if (!s_.buffer[i].is_deleted)
@@ -284,7 +268,7 @@ std::size_t edit::BufferSlice::calculate_x_index(const BufferState::Line &line, 
  * @param index Index.
  * @return Next index, or 0.
  */
-std::size_t edit::BufferSlice::next_visible_before(std::size_t index) const
+std::size_t BufferSlice::next_visible_before(std::size_t index) const
 {
     if (index > 0)
         for (auto i = index; (i--) > 0;)
@@ -298,7 +282,7 @@ std::size_t edit::BufferSlice::next_visible_before(std::size_t index) const
  * @param index Index.
  * @return Next index, or `buffer_.size()`.
  */
-std::size_t edit::BufferSlice::next_visible_after(std::size_t index) const
+std::size_t BufferSlice::next_visible_after(std::size_t index) const
 {
     for (auto i = index + 1; i < s_.buffer.size(); i++)
         if (!s_.buffer[i].is_deleted)
@@ -306,12 +290,12 @@ std::size_t edit::BufferSlice::next_visible_after(std::size_t index) const
     return s_.buffer.size();
 }
 
-bool edit::BufferSlice::is_y_at_top(std::size_t y) const
+bool BufferSlice::is_y_at_top(std::size_t y) const
 {
     return y == 0;
 }
 
-bool edit::BufferSlice::is_y_at_bottom(std::size_t y) const
+bool BufferSlice::is_y_at_bottom(std::size_t y) const
 {
     return y == s_.lines.size() - 1;
 }

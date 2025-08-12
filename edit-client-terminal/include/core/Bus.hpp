@@ -7,7 +7,7 @@
 #include <memory>
 #include <typeindex>
 
-namespace edit
+namespace edit::core
 {
 
 template <typename Message> class Bus

@@ -4,7 +4,7 @@
 #include <edit-common/Char.hpp>
 #include <variant>
 
-namespace edit
+namespace edit::core
 {
 
 /**
@@ -44,4 +44,4 @@ using Event = std::variant<KeyPressedEvent, // Break.
     CharDeletedEvent,
     CommandEnteredEvent>;
 
-} // namespace edit
+} // namespace edit::core
