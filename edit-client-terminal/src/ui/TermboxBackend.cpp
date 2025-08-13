@@ -101,7 +101,6 @@ void TermboxBackend::on_key(const struct tb_event &ev, Dispatcher &dispatcher)
     if (!ev.mod && !ev.key && isprint(ev.ch))
     {
         dispatcher.emit(KeyPressedEvent{ev.ch});
-        dispatcher.dispatch(CursorRightAction{});
         return;
     }
 
@@ -109,11 +108,9 @@ void TermboxBackend::on_key(const struct tb_event &ev, Dispatcher &dispatcher)
     {
     case TB_KEY_ENTER:
         dispatcher.emit(KeyPressedEvent{'\n'});
-        dispatcher.dispatch(CursorRightAction{});
         return;
     case TB_KEY_TAB:
         dispatcher.emit(KeyPressedEvent{'\t'});
-        dispatcher.dispatch(CursorRightAction{});
         return;
     case TB_KEY_ARROW_UP:
         dispatcher.dispatch(CursorUpAction{});

@@ -30,7 +30,9 @@ add_library(edit-client-terminal-lib
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ui/TermboxView.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Args.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Bootstrap.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Editor.cpp)
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/CommandInterpreter.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Editor.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/InputInterpreter.cpp)
 
 target_include_directories(edit-client-terminal-lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 

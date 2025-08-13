@@ -1,5 +1,7 @@
 #pragma once
 
+#include "CommandInterpreter.hpp"
+#include "InputInterpreter.hpp"
 #include "network/INetworkComponent.hpp"
 #include "state/EditorStore.hpp"
 #include "ui/IView.hpp"
@@ -17,6 +19,8 @@ class Editor
     // Components.
     std::shared_ptr<network::INetworkComponent> network_component_;
     edit::state::EditorStore store_;
+    InputInterpreter input_interpreter_;
+    CommandInterpreter command_interpreter_;
 
     // View.
     std::unique_ptr<ui::IView> view_;
@@ -31,10 +35,6 @@ class Editor
         std::unique_ptr<ui::IView> &&view);
 
     void run();
-
-  private:
-    void handle(const core::CommandEnteredEvent &e);
-    void handle(const core::KeyPressedEvent &e);
 };
 
 } // namespace edit

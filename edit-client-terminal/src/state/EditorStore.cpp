@@ -45,14 +45,14 @@ void EditorStore::reduce(const InsertAction &a)
 {
     switch (mode_.mode())
     {
+    case Mode::NormalMode:
+        break;
     case Mode::InsertMode:
         dispatcher_.emit(buffer_.reduce(a));
         break;
     case Mode::CommandMode:
         if (auto ev = status_.reduce(a); ev.has_value())
             dispatcher_.emit(ev.value());
-        break;
-    default:
         break;
     }
 }
@@ -61,14 +61,13 @@ void EditorStore::reduce(const DeleteAction &a)
 {
     switch (mode_.mode())
     {
+    case Mode::NormalMode:
     case Mode::InsertMode:
         if (auto ev = buffer_.reduce(a); ev.has_value())
             dispatcher_.emit(ev.value());
         break;
     case Mode::CommandMode:
         status_.reduce(a);
-        break;
-    default:
         break;
     }
 }
@@ -77,6 +76,8 @@ void EditorStore::reduce(const BackspaceAction &a)
 {
     switch (mode_.mode())
     {
+    case Mode::NormalMode:
+        break;
     case Mode::InsertMode:
         if (auto ev = buffer_.reduce(a); ev.has_value())
             dispatcher_.emit(ev.value());
@@ -84,24 +85,34 @@ void EditorStore::reduce(const BackspaceAction &a)
     case Mode::CommandMode:
         status_.reduce(a);
         break;
-    default:
-        break;
     }
 }
 
 void EditorStore::reduce(const CursorUpAction &a)
 {
-    if (mode_.mode() == Mode::InsertMode)
+    switch (mode_.mode())
     {
+    case Mode::NormalMode:
+    case Mode::InsertMode:
         buffer_.reduce(a);
+        break;
+    case Mode::CommandMode:
+        // TODO: Go up in history.
+        break;
     }
 }
 
 void EditorStore::reduce(const CursorDownAction &a)
 {
-    if (mode_.mode() == Mode::InsertMode)
+    switch (mode_.mode())
     {
+    case Mode::NormalMode:
+    case Mode::InsertMode:
         buffer_.reduce(a);
+        break;
+    case Mode::CommandMode:
+        // TODO: Go down in history.
+        break;
     }
 }
 
@@ -109,13 +120,12 @@ void EditorStore::reduce(const CursorLeftAction &a)
 {
     switch (mode_.mode())
     {
+    case Mode::NormalMode:
     case Mode::InsertMode:
         buffer_.reduce(a);
         break;
     case Mode::CommandMode:
         status_.reduce(a);
-        break;
-    default:
         break;
     }
 }
@@ -124,13 +134,12 @@ void EditorStore::reduce(const CursorRightAction &a)
 {
     switch (mode_.mode())
     {
+    case Mode::NormalMode:
     case Mode::InsertMode:
         buffer_.reduce(a);
         break;
     case Mode::CommandMode:
         status_.reduce(a);
-        break;
-    default:
         break;
     }
 }
