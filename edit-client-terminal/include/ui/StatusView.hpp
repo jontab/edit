@@ -4,7 +4,6 @@
 #include "Rect.hpp"
 #include "StatusViewSnapshot.hpp"
 #include "state/EditorStore.hpp"
-#include <ostream>
 
 namespace edit::ui
 {

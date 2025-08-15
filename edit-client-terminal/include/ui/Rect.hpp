@@ -7,8 +7,8 @@ namespace edit::ui
 
 template <typename T> struct Rect
 {
-    edit::core::Point<T> anchor;
-    edit::core::Point<T> size;
+    core::Point<T> anchor;
+    core::Point<T> size;
 };
 
 } // namespace edit::ui

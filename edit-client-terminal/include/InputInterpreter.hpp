@@ -1,6 +1,8 @@
 #pragma once
 
-#include "core/Dispatcher.hpp"
+#include "core/Action.hpp"
+#include "core/Bus.hpp"
+#include "core/Event.hpp"
 #include "state/EditorStore.hpp"
 
 namespace edit
@@ -8,15 +10,17 @@ namespace edit
 
 class InputInterpreter
 {
-    core::Dispatcher &dispatcher_;
+    core::Bus<core::Action> &action_bus_;
     const state::EditorStore &store_;
 
   public:
-    InputInterpreter(core::Dispatcher &dispatcher, const state::EditorStore &store);
+    InputInterpreter(decltype(action_bus_) action_bus,
+        core::Bus<core::Event> &event_bus,
+        const state::EditorStore &store);
 
   private:
-    void handle(const core::KeyPressedEvent &ev);
-    void handle_normal_mode(const core::KeyPressedEvent &ev);
+    void handle(const core::events::KeyPressed &ev);
+    void handle_normal_mode(const core::events::KeyPressed &ev);
 };
 
 } // namespace edit

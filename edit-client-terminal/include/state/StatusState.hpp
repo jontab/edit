@@ -1,6 +1,7 @@
 #pragma once
 
-#include "core/Action.hpp"
+#include <cstddef>
+#include <string>
 
 namespace edit::state
 {

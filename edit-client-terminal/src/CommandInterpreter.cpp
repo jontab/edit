@@ -1,16 +1,17 @@
 #include "CommandInterpreter.hpp"
+#include "core/ActionTypes.hpp"
 
 using namespace edit::core;
 
-edit::CommandInterpreter::CommandInterpreter(Dispatcher &dispatcher)
-    : dispatcher_(dispatcher)
+edit::CommandInterpreter::CommandInterpreter(decltype(action_bus_) action_bus, core::Bus<core::Event> &event_bus)
+    : action_bus_(action_bus)
 {
-    dispatcher.on_event<CommandEnteredEvent>([this](const auto &ev) { handle(ev); });
+    event_bus.on<events::CommandEntered>([this](const auto &ev) { handle(ev); });
 }
 
-void edit::CommandInterpreter::handle(const CommandEnteredEvent &ev)
+void edit::CommandInterpreter::handle(const events::CommandEntered &ev)
 {
     if (ev.text.find("quit") != std::string::npos)
-        dispatcher_.dispatch(QuitAction{});
-    dispatcher_.dispatch(ChangeModeAction{Mode::NormalMode});
+        action_bus_.post(actions::Quit{});
+    action_bus_.post(actions::ChangeMode{Mode::NormalMode});
 }

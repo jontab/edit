@@ -13,7 +13,7 @@ struct BufferState
         std::size_t end;
     };
 
-    edit::common::Buffer buffer;
+    common::Buffer buffer;
     std::vector<Line> lines;
     std::size_t cursor;
     int site;

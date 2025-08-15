@@ -25,33 +25,33 @@ edit::common::Buffer::Buffer(std::vector<Char> &&data)
         clock_ = it->clock;
 }
 
-bool edit::common::Buffer::insert(const Char &ch)
+int edit::common::Buffer::insert(const Char &ch)
 {
     clock_ = std::max(clock_, ch.clock);
     if (edit::common::find(data_, ch) == -1)
     {
         int i = edit::common::find_sorted_position(data_, ch);
         data_.insert(data_.begin() + i, ch);
-        return true;
+        return i;
     }
     else
     {
-        return false;
+        return -1;
     }
 }
 
-bool edit::common::Buffer::remove(const Char &ch)
+int edit::common::Buffer::remove(const Char &ch)
 {
     clock_ = std::max(clock_, ch.clock);
     int i = edit::common::find(data_, ch);
     if ((i >= 0) && !data_[i].is_deleted)
     {
         data_[i].is_deleted = true;
-        return true;
+        return i;
     }
     else
     {
-        return false;
+        return -1;
     }
 }
 

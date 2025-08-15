@@ -59,7 +59,7 @@ TEST(BufferTests, Insert_ReturnsFalse_WhenCharAlreadyExists)
         {.parent_clock = 1,          .parent_site = 1,         .clock = 2, .site = 1},
     });
     for (const auto &ch : buffer)
-        EXPECT_FALSE(buffer.insert(ch));
+        EXPECT_LT(buffer.insert(ch), 0);
 }
 
 TEST(BufferTests, Insert_ReturnsTrue)
@@ -78,7 +78,7 @@ TEST(BufferTests, Insert_ReturnsTrue)
         {.parent_clock = ROOT_CLOCK, .parent_site = ROOT_SITE, .clock = 0, .site = 4},
     };
     for (auto &ch : insert)
-        EXPECT_TRUE(buffer.insert(ch));
+        EXPECT_GE(buffer.insert(ch), 0);
 
     EXPECT_EQ(*(buffer.begin() + 0), insert[0]); // 0.
     EXPECT_EQ(*(buffer.begin() + 4), insert[1]); // 3 + 1.
@@ -92,9 +92,9 @@ TEST(BufferTests, Remove_ReturnsFalse_WhenCharDoesNotExist)
         {.parent_clock = 0,          .parent_site = 1,         .clock = 1, .site = 1},
         {.parent_clock = 1,          .parent_site = 1,         .clock = 2, .site = 1},
     });
-    EXPECT_FALSE(buffer.remove({.clock = 0, .site = 3}));
-    EXPECT_FALSE(buffer.remove({.clock = 1, .site = 3}));
-    EXPECT_FALSE(buffer.remove({.clock = 2, .site = 3}));
+    EXPECT_LT(buffer.remove({.clock = 0, .site = 3}), 0);
+    EXPECT_LT(buffer.remove({.clock = 1, .site = 3}), 0);
+    EXPECT_LT(buffer.remove({.clock = 2, .site = 3}), 0);
 }
 
 TEST(BufferTests, Remove_ReturnsFalse_WhenCharIsAlreadyDeleted)
@@ -105,7 +105,7 @@ TEST(BufferTests, Remove_ReturnsFalse_WhenCharIsAlreadyDeleted)
         {.parent_clock = 1,          .parent_site = 1,         .clock = 2, .site = 1, .is_deleted = true},
     });
     for (const auto &ch : buffer)
-        EXPECT_FALSE(buffer.remove(ch));
+        EXPECT_LT(buffer.remove(ch), 0);
 }
 
 TEST(BufferTests, Remove_ReturnsTrue)
@@ -116,7 +116,7 @@ TEST(BufferTests, Remove_ReturnsTrue)
         {.parent_clock = 1,          .parent_site = 1,         .clock = 2, .site = 1},
     });
     for (const auto &ch : buffer)
-        EXPECT_TRUE(buffer.remove(ch));
+        EXPECT_GE(buffer.remove(ch), 0);
     for (const auto &ch : buffer)
         EXPECT_TRUE(ch.is_deleted);
 }

@@ -1,6 +1,8 @@
 #pragma once
 
-#include "core/Dispatcher.hpp"
+#include "core/Action.hpp"
+#include "core/Bus.hpp"
+#include "core/Event.hpp"
 #include <future>
 #include <string>
 
@@ -22,7 +24,6 @@ class INetworkComponent
         const std::string &port,
         const std::string &path,
         const std::string &apikey) = 0;
-    virtual void bind(edit::core::Dispatcher &dispatcher) = 0;
 };
 
 } // namespace edit::network

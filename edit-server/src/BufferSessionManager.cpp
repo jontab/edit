@@ -1,8 +1,12 @@
 #include "BufferSessionManager.hpp"
+#include <edit-common/Delta.hpp>
 #include <iostream>
 
 BufferSessionManager::BufferSessionManager(std::unique_ptr<IDatabase> db, std::unique_ptr<IWebSocketServer> wss)
-    : db_(std::move(db)), wss_(std::move(wss)), sessions_(), users_()
+    : db_(std::move(db))
+    , wss_(std::move(wss))
+    , sessions_()
+    , users_()
 {
 }
 
@@ -32,7 +36,14 @@ void BufferSessionManager::on_client_connected(void *ws, const std::string &doci
     users_[ws] = docid;
 
     wss_->subscribe(ws, docid);
-    // TODO: wss_->send(ws, nlohmann::json{session.buffer}.dump());
+
+    // Inform the user of the entire state of the buffer.
+    for (auto it = session.buffer.begin(); it < session.buffer.end(); it++)
+    {
+        edit::common::Delta delta = {.is_delete = false, .ch = *it};
+        nlohmann::json j = delta;
+        wss_->send(ws, j.dump());
+    }
 }
 
 /**
@@ -46,9 +57,31 @@ void BufferSessionManager::on_client_message(void *ws, const std::string &messag
     {
         const std::string &docid = it->second;
         std::cout << "INFO: " << docid << ": " << message << std::endl;
-        // TODO: auto &session = sessions_.at(docid);
-        // TODO: Apply to copy.
-        wss_->broadcast(docid, message);
+
+        try
+        {
+            auto j = nlohmann::json::parse(message);
+            auto d = j.get<edit::common::Delta>();
+            if (!d.is_delete)
+            {
+                // Apply to local copy.
+                auto &session = sessions_.at(docid);
+                session.buffer.insert(d.ch);
+            }
+            else
+            {
+                // Apply to local copy.
+                auto &session = sessions_.at(docid);
+                session.buffer.remove(d.ch);
+            }
+
+            // Broadcast the change.
+            wss_->broadcast(docid, message);
+        }
+        catch (const std::exception &e)
+        {
+            std::cerr << "ERROR: " << docid << ": Ex: " << e.what() << std::endl;
+        }
     }
     else
     {

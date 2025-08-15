@@ -4,7 +4,7 @@
 #include "IView.hpp"
 #include "LayoutEngine.hpp"
 #include "StatusView.hpp"
-#include "core/Bus.hpp"
+#include "state/EditorStore.hpp"
 #include <memory>
 
 namespace edit::ui
@@ -20,8 +20,8 @@ class TermboxView : public IView
   public:
     TermboxView();
 
-    void poll(edit::core::Dispatcher &dispatcher) override;
-    void render(const edit::state::EditorStore &store) override;
+    void poll(core::Bus<core::Action> &action_bus, core::Bus<core::Event> &event_bus) override;
+    void render(const state::EditorStore &store) override;
 };
 
 } // namespace edit::ui

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "core/Action.hpp"
-#include "core/Event.hpp"
+#include "core/ActionTypes.hpp"
+#include "core/EventTypes.hpp"
 #include "core/Point.hpp"
 #include "state/BufferState.hpp"
 
@@ -19,21 +19,22 @@ class BufferSlice
 
     const BufferState &state() const;
 
-    // Reduce.
-    void reduce(const edit::core::CursorUpAction &a);
-    void reduce(const edit::core::CursorDownAction &a);
-    void reduce(const edit::core::CursorLeftAction &a);
-    void reduce(const edit::core::CursorRightAction &a);
-    edit::core::CharInsertedEvent reduce(const edit::core::InsertAction &a);
-    std::optional<edit::core::CharDeletedEvent> reduce(const edit::core::DeleteAction &a);
-    std::optional<edit::core::CharDeletedEvent> reduce(const edit::core::BackspaceAction &a);
+    void reduce(const core::actions::CursorUp &a);
+    void reduce(const core::actions::CursorDown &a);
+    void reduce(const core::actions::CursorLeft &a);
+    void reduce(const core::actions::CursorRight &a);
+    void reduce(const core::actions::RemoteInsert &a); // TODO: Maybe emit?
+    void reduce(const core::actions::RemoteDelete &a); // TODO: Maybe emit?
 
-    // Other.
+    core::events::CharInserted reduce(const core::actions::Insert &a);
+    std::optional<core::events::CharDeleted> reduce(const core::actions::Delete &a);
+    std::optional<core::events::CharDeleted> reduce(const core::actions::Backspace &a);
+
     void set_cursor_index(std::size_t index);
     std::size_t cursor() const;
     int site() const;
     std::size_t get_cursor_y() const;
-    edit::core::Point<std::size_t> get_cursor_position() const;
+    core::Point<std::size_t> get_cursor_position() const;
     std::size_t line_count() const;
     std::size_t line_length(std::size_t y) const;
 

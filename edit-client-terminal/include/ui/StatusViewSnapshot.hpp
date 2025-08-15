@@ -3,7 +3,6 @@
 #include "core/Mode.hpp"
 #include "state/StatusSlice.hpp"
 #include <cstddef>
-#include <string>
 
 namespace edit::ui
 {
@@ -14,10 +13,10 @@ namespace edit::ui
  */
 struct StatusViewSnapshot
 {
-    const edit::state::StatusSlice &slice;
+    const state::StatusSlice &slice;
 
     // The following is not owned by `StatusSlice` and needs to be passed via context.
-    edit::core::Mode current_mode;
+    core::Mode current_mode;
     std::size_t buffer_cursor_index;
     std::size_t buffer_cursor_y;
     std::size_t buffer_cursor_x;

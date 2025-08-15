@@ -1,6 +1,8 @@
 #define TB_IMPL
 
 #include "ui/TermboxBackend.hpp"
+#include "core/ActionTypes.hpp"
+#include "core/EventTypes.hpp"
 #include "termbox2.h"
 
 using namespace edit::core;
@@ -35,7 +37,7 @@ void TermboxBackend::put_char(unsigned int y, unsigned int x, std::uint32_t ch)
         throw std::runtime_error("tb_set_cell failed");
 }
 
-void TermboxBackend::put_text(unsigned int y, unsigned int x, std::string text)
+void TermboxBackend::put_text(unsigned int y, unsigned int x, const std::string_view &text)
 {
     for (std::size_t i = 0; i < text.size(); i++)
         if (tb_set_cell(x + i, y, static_cast<std::uint32_t>(text[i]), TB_WHITE, TB_DEFAULT) == TB_ERR)
@@ -72,10 +74,12 @@ unsigned int TermboxBackend::width()
     }
 }
 
-void TermboxBackend::poll(Dispatcher &dispatcher, const std::function<void(unsigned int, unsigned int)> &on_resize)
+void TermboxBackend::poll(core::Bus<core::Action> &action_bus,
+    core::Bus<core::Event> &event_bus,
+    const std::function<void(unsigned int, unsigned int)> &on_resize)
 {
     struct tb_event ev;
-    switch (tb_peek_event(&ev, 50))
+    switch (tb_peek_event(&ev, 10))
     {
     case TB_OK:
         break;
@@ -86,7 +90,7 @@ void TermboxBackend::poll(Dispatcher &dispatcher, const std::function<void(unsig
     switch (ev.type)
     {
     case TB_EVENT_KEY:
-        on_key(ev, dispatcher);
+        on_key(ev, action_bus, event_bus);
         break;
     case TB_EVENT_RESIZE:
         on_resize(height(), width());
@@ -96,43 +100,45 @@ void TermboxBackend::poll(Dispatcher &dispatcher, const std::function<void(unsig
     }
 }
 
-void TermboxBackend::on_key(const struct tb_event &ev, Dispatcher &dispatcher)
+void TermboxBackend::on_key(const struct tb_event &ev,
+    core::Bus<core::Action> &action_bus,
+    core::Bus<core::Event> &event_bus)
 {
     if (!ev.mod && !ev.key && isprint(ev.ch))
     {
-        dispatcher.emit(KeyPressedEvent{ev.ch});
+        event_bus.post(events::KeyPressed{ev.ch});
         return;
     }
 
     switch (ev.key)
     {
     case TB_KEY_ENTER:
-        dispatcher.emit(KeyPressedEvent{'\n'});
+        event_bus.post(events::KeyPressed{'\n'});
         return;
     case TB_KEY_TAB:
-        dispatcher.emit(KeyPressedEvent{'\t'});
+        event_bus.post(events::KeyPressed{'\t'});
         return;
     case TB_KEY_ARROW_UP:
-        dispatcher.dispatch(CursorUpAction{});
+        action_bus.post(actions::CursorUp{});
         return;
     case TB_KEY_ARROW_DOWN:
-        dispatcher.dispatch(CursorDownAction{});
+        action_bus.post(actions::CursorDown{});
         return;
     case TB_KEY_ARROW_LEFT:
-        dispatcher.dispatch(CursorLeftAction{});
+        action_bus.post(actions::CursorLeft{});
         return;
     case TB_KEY_ARROW_RIGHT:
-        dispatcher.dispatch(CursorRightAction{});
+        action_bus.post(actions::CursorRight{});
         return;
     case TB_KEY_DELETE:
-        dispatcher.dispatch(DeleteAction{});
+        action_bus.post(actions::Delete{});
         return;
     case TB_KEY_BACKSPACE:
     case TB_KEY_BACKSPACE2:
-        dispatcher.dispatch(BackspaceAction{});
+        action_bus.post(actions::Backspace{});
         return;
     case TB_KEY_ESC:
-        dispatcher.dispatch(EscapeAction{});
+        action_bus.post(actions::Escape{});
         break;
     default:
         break;

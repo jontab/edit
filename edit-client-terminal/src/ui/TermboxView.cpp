@@ -13,9 +13,9 @@ TermboxView::TermboxView()
 {
 }
 
-void TermboxView::poll(Dispatcher &dispatcher)
+void TermboxView::poll(core::Bus<core::Action> &action_bus, core::Bus<core::Event> &event_bus)
 {
-    backend_->poll(dispatcher, [this](auto height, auto width) { layout_.resize(height, width); });
+    backend_->poll(action_bus, event_bus, [this](auto height, auto width) { layout_.resize(height, width); });
 }
 
 void TermboxView::render(const EditorStore &store)

@@ -10,7 +10,7 @@ namespace edit::ui
 
 class BufferView
 {
-    edit::core::Point<std::size_t> camera_;
+    core::Point<std::size_t> camera_;
 
   public:
     BufferView();

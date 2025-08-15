@@ -1,6 +1,7 @@
 #pragma once
 
-#include "core/Event.hpp"
+#include "core/ActionTypes.hpp"
+#include "core/EventTypes.hpp"
 #include "state/StatusState.hpp"
 #include <optional>
 
@@ -16,15 +17,13 @@ class StatusSlice
 
     const StatusState &state() const;
 
-    // Reduce.
-    void reduce(const edit::core::CursorLeftAction &a);
-    void reduce(const edit::core::CursorRightAction &a);
-    std::optional<edit::core::CommandEnteredEvent> reduce(const edit::core::InsertAction &a);
-    void reduce(const edit::core::DeleteAction &a);
-    void reduce(const edit::core::BackspaceAction &a);
-    void reduce(const edit::core::ChangeStatusAction &a);
+    void reduce(const core::actions::CursorLeft &a);
+    void reduce(const core::actions::CursorRight &a);
+    std::optional<core::events::CommandEntered> reduce(const core::actions::Insert &a);
+    void reduce(const core::actions::Delete &a);
+    void reduce(const core::actions::Backspace &a);
+    void reduce(const core::actions::ChangeStatus &a);
 
-    // Other.
     void reset_command();
 };
 

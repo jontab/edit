@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/Action.hpp"
+#include "core/ActionTypes.hpp"
 #include "state/ModeState.hpp"
 
 namespace edit::state
@@ -12,11 +12,11 @@ class ModeSlice
 
   public:
     // Reduce.
-    void reduce(const edit::core::ChangeModeAction &a);
-    void reduce(const edit::core::EscapeAction &a);
+    void reduce(const core::actions::ChangeMode &a);
+    void reduce(const core::actions::Escape &a);
 
     // Other.
-    edit::core::Mode mode() const;
+    core::Mode mode() const;
 };
 
 } // namespace edit::state

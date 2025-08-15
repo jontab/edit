@@ -1,19 +1,21 @@
 #pragma once
 
-#include "core/Dispatcher.hpp"
+#include "core/Action.hpp"
+#include "core/Bus.hpp"
+#include "core/Event.hpp"
 
 namespace edit
 {
 
 class CommandInterpreter
 {
-    core::Dispatcher &dispatcher_;
+    core::Bus<core::Action> &action_bus_;
 
   public:
-    CommandInterpreter(core::Dispatcher &dispatcher);
+    CommandInterpreter(decltype(action_bus_) action_bus, core::Bus<core::Event> &event_bus);
 
   private:
-    void handle(const core::CommandEnteredEvent &ev);
+    void handle(const core::events::CommandEntered &ev);
 };
 
 } // namespace edit

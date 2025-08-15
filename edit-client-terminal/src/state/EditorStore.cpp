@@ -3,27 +3,29 @@
 using namespace edit::core;
 using namespace edit::state;
 
-EditorStore::EditorStore(Dispatcher &dispatcher)
-    : dispatcher_(dispatcher)
+EditorStore::EditorStore(core::Bus<core::Action> &action_bus, decltype(event_bus_) &event_bus)
+    : event_bus_(event_bus)
     , buffer_()
     , mode_()
     , status_()
 {
-    dispatcher.on_action<EscapeAction>([this](const auto &a) { mode_.reduce(a); });
-    dispatcher.on_action<ChangeModeAction>([this](const auto &a) {
+    action_bus.on<actions::Escape>([this](const auto &a) { mode_.reduce(a); });
+    action_bus.on<actions::ChangeMode>([this](const auto &a) {
         if (a.to == Mode::CommandMode)
             status_.reset_command();
         mode_.reduce(a);
     });
 
-    dispatcher.on_action<InsertAction>([this](const auto &a) { reduce(a); });
-    dispatcher.on_action<DeleteAction>([this](const auto &a) { reduce(a); });
-    dispatcher.on_action<BackspaceAction>([this](const auto &a) { reduce(a); });
-    dispatcher.on_action<CursorUpAction>([this](const auto &a) { reduce(a); });
-    dispatcher.on_action<CursorDownAction>([this](const auto &a) { reduce(a); });
-    dispatcher.on_action<CursorLeftAction>([this](const auto &a) { reduce(a); });
-    dispatcher.on_action<CursorRightAction>([this](const auto &a) { reduce(a); });
-    dispatcher.on_action<ChangeStatusAction>([this](const auto &a) { reduce(a); });
+    action_bus.on<actions::Insert>([this](const auto &a) { reduce(a); });
+    action_bus.on<actions::Delete>([this](const auto &a) { reduce(a); });
+    action_bus.on<actions::Backspace>([this](const auto &a) { reduce(a); });
+    action_bus.on<actions::RemoteInsert>([this](const auto &a) { buffer_.reduce(a); });
+    action_bus.on<actions::RemoteDelete>([this](const auto &a) { buffer_.reduce(a); });
+    action_bus.on<actions::CursorUp>([this](const auto &a) { reduce(a); });
+    action_bus.on<actions::CursorDown>([this](const auto &a) { reduce(a); });
+    action_bus.on<actions::CursorLeft>([this](const auto &a) { reduce(a); });
+    action_bus.on<actions::CursorRight>([this](const auto &a) { reduce(a); });
+    action_bus.on<actions::ChangeStatus>([this](const auto &a) { reduce(a); });
 }
 
 const BufferSlice &EditorStore::buffer() const
@@ -41,30 +43,30 @@ const StatusSlice &EditorStore::status() const
     return status_;
 }
 
-void EditorStore::reduce(const InsertAction &a)
+void EditorStore::reduce(const actions::Insert &a)
 {
     switch (mode_.mode())
     {
     case Mode::NormalMode:
         break;
     case Mode::InsertMode:
-        dispatcher_.emit(buffer_.reduce(a));
+        event_bus_.post(buffer_.reduce(a));
         break;
     case Mode::CommandMode:
         if (auto ev = status_.reduce(a); ev.has_value())
-            dispatcher_.emit(ev.value());
+            event_bus_.post(ev.value());
         break;
     }
 }
 
-void EditorStore::reduce(const DeleteAction &a)
+void EditorStore::reduce(const actions::Delete &a)
 {
     switch (mode_.mode())
     {
     case Mode::NormalMode:
     case Mode::InsertMode:
         if (auto ev = buffer_.reduce(a); ev.has_value())
-            dispatcher_.emit(ev.value());
+            event_bus_.post(ev.value());
         break;
     case Mode::CommandMode:
         status_.reduce(a);
@@ -72,7 +74,7 @@ void EditorStore::reduce(const DeleteAction &a)
     }
 }
 
-void EditorStore::reduce(const BackspaceAction &a)
+void EditorStore::reduce(const actions::Backspace &a)
 {
     switch (mode_.mode())
     {
@@ -80,7 +82,7 @@ void EditorStore::reduce(const BackspaceAction &a)
         break;
     case Mode::InsertMode:
         if (auto ev = buffer_.reduce(a); ev.has_value())
-            dispatcher_.emit(ev.value());
+            event_bus_.post(ev.value());
         break;
     case Mode::CommandMode:
         status_.reduce(a);
@@ -88,7 +90,7 @@ void EditorStore::reduce(const BackspaceAction &a)
     }
 }
 
-void EditorStore::reduce(const CursorUpAction &a)
+void EditorStore::reduce(const actions::CursorUp &a)
 {
     switch (mode_.mode())
     {
@@ -102,7 +104,7 @@ void EditorStore::reduce(const CursorUpAction &a)
     }
 }
 
-void EditorStore::reduce(const CursorDownAction &a)
+void EditorStore::reduce(const actions::CursorDown &a)
 {
     switch (mode_.mode())
     {
@@ -116,7 +118,7 @@ void EditorStore::reduce(const CursorDownAction &a)
     }
 }
 
-void EditorStore::reduce(const CursorLeftAction &a)
+void EditorStore::reduce(const actions::CursorLeft &a)
 {
     switch (mode_.mode())
     {
@@ -130,7 +132,7 @@ void EditorStore::reduce(const CursorLeftAction &a)
     }
 }
 
-void EditorStore::reduce(const CursorRightAction &a)
+void EditorStore::reduce(const actions::CursorRight &a)
 {
     switch (mode_.mode())
     {
@@ -144,7 +146,7 @@ void EditorStore::reduce(const CursorRightAction &a)
     }
 }
 
-void EditorStore::reduce(const ChangeStatusAction &a)
+void EditorStore::reduce(const actions::ChangeStatus &a)
 {
     status_.reduce(a);
 }

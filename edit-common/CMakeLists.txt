@@ -16,7 +16,8 @@ target_include_directories(nlohmann-json INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/.
 
 add_library(edit-common 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Buffer.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Char.cpp)
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Char.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Delta.cpp)
 
 target_include_directories(edit-common PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
@@ -33,7 +34,8 @@ if(BUILD_TESTING)
 
     add_executable(edit-common-tests
         ${CMAKE_CURRENT_SOURCE_DIR}/tests/BufferTests.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/tests/CharTests.cpp)
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/CharTests.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/DeltaTests.cpp)
 
     target_link_libraries(edit-common-tests
         edit-common

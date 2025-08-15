@@ -13,12 +13,12 @@ namespace edit::ui
  */
 struct BufferViewSnapshot
 {
-    const edit::state::BufferSlice &slice;
+    const state::BufferSlice &slice;
     std::size_t cursor_y;
     std::size_t cursor_x;
 
     // The following is not owned by `BufferSlice`.
-    edit::core::Mode current_mode;
+    core::Mode current_mode;
 };
 
 }; // namespace edit::ui

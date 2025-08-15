@@ -18,23 +18,23 @@ const StatusState &StatusSlice::state() const
 /* Reduce                                                                     */
 /******************************************************************************/
 
-void StatusSlice::reduce(const CursorLeftAction &a)
+void StatusSlice::reduce(const actions::CursorLeft &a)
 {
     if (s_.command_cursor > 0)
         s_.command_cursor--;
 }
 
-void StatusSlice::reduce(const CursorRightAction &a)
+void StatusSlice::reduce(const actions::CursorRight &a)
 {
     if (s_.command_cursor < s_.command_content.length())
         s_.command_cursor = s_.command_content.length();
 }
 
-std::optional<CommandEnteredEvent> StatusSlice::reduce(const InsertAction &a)
+std::optional<events::CommandEntered> StatusSlice::reduce(const actions::Insert &a)
 {
     if (auto ch = static_cast<char>(a.ch); ch == '\n')
     {
-        return CommandEnteredEvent{s_.command_content};
+        return events::CommandEntered{s_.command_content};
     }
     else if (isprint(ch))
     {
@@ -48,7 +48,7 @@ std::optional<CommandEnteredEvent> StatusSlice::reduce(const InsertAction &a)
     return std::nullopt;
 }
 
-void StatusSlice::reduce(const DeleteAction &a)
+void StatusSlice::reduce(const actions::Delete &a)
 {
     auto l_end = s_.command_cursor;     // Excludes `command_cursor`.
     auto r_beg = s_.command_cursor + 1; // Excludes `command_cursor`.
@@ -57,16 +57,16 @@ void StatusSlice::reduce(const DeleteAction &a)
     s_.command_content = l + r;
 }
 
-void StatusSlice::reduce(const BackspaceAction &a)
+void StatusSlice::reduce(const actions::Backspace &a)
 {
     if (s_.command_cursor > 0)
     {
-        reduce(CursorLeftAction{});
-        reduce(DeleteAction{});
+        reduce(actions::CursorLeft{});
+        reduce(actions::Delete{});
     }
 }
 
-void StatusSlice::reduce(const ChangeStatusAction &a)
+void StatusSlice::reduce(const actions::ChangeStatus &a)
 {
     s_.status = a.message;
 }

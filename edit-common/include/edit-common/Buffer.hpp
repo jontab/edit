@@ -16,8 +16,8 @@ class Buffer
     Buffer(const std::vector<Char> &data);
     Buffer(std::vector<Char> &&data);
 
-    bool insert(const Char &ch);
-    bool remove(const Char &ch);
+    int insert(const Char &ch);
+    int remove(const Char &ch);
 
     int clock() const;
     std::size_t size() const;

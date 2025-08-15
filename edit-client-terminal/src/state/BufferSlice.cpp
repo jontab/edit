@@ -30,7 +30,7 @@ const BufferState &BufferSlice::state() const
 /* Reduce                                                                     */
 /******************************************************************************/
 
-void BufferSlice::reduce(const CursorUpAction &a)
+void BufferSlice::reduce(const actions::CursorUp &a)
 {
     auto y = get_cursor_y();
     if (!is_y_at_top(y))
@@ -40,7 +40,7 @@ void BufferSlice::reduce(const CursorUpAction &a)
     }
 }
 
-void BufferSlice::reduce(const CursorDownAction &a)
+void BufferSlice::reduce(const actions::CursorDown &a)
 {
     auto y = get_cursor_y();
     if (!is_y_at_bottom(y))
@@ -50,12 +50,12 @@ void BufferSlice::reduce(const CursorDownAction &a)
     }
 }
 
-void BufferSlice::reduce(const CursorLeftAction &a)
+void BufferSlice::reduce(const actions::CursorLeft &a)
 {
     s_.cursor = next_visible_before(s_.cursor);
 }
 
-void BufferSlice::reduce(const CursorRightAction &a)
+void BufferSlice::reduce(const actions::CursorRight &a)
 {
     if (s_.cursor >= s_.buffer.size())
     {
@@ -77,7 +77,7 @@ void BufferSlice::reduce(const CursorRightAction &a)
     }
 }
 
-CharInsertedEvent BufferSlice::reduce(const InsertAction &a)
+events::CharInserted BufferSlice::reduce(const actions::Insert &a)
 {
     int parent_clock = 0;
     int parent_site = -1;
@@ -97,10 +97,10 @@ CharInsertedEvent BufferSlice::reduce(const InsertAction &a)
     };
     s_.buffer.insert(ch);
     calculate_lines();
-    return CharInsertedEvent{ch};
+    return events::CharInserted{ch};
 }
 
-std::optional<CharDeletedEvent> BufferSlice::reduce(const DeleteAction &a)
+std::optional<events::CharDeleted> BufferSlice::reduce(const actions::Delete &a)
 {
     if (s_.cursor >= s_.buffer.size())
     {
@@ -113,30 +113,47 @@ std::optional<CharDeletedEvent> BufferSlice::reduce(const DeleteAction &a)
         {
             s_.buffer[i].is_deleted = true;
             calculate_lines();
-            return CharDeletedEvent{s_.buffer[i]};
+            return events::CharDeleted{s_.buffer[i]};
         }
     }
     else
     {
         s_.buffer[s_.cursor].is_deleted = true;
         calculate_lines();
-        return CharDeletedEvent{s_.buffer[s_.cursor]};
+        return events::CharDeleted{s_.buffer[s_.cursor]};
     }
 
     return std::nullopt;
 }
 
-std::optional<CharDeletedEvent> BufferSlice::reduce(const BackspaceAction &a)
+std::optional<events::CharDeleted> BufferSlice::reduce(const actions::Backspace &a)
 {
     if (s_.cursor > 0)
     {
-        reduce(CursorLeftAction{});
-        return reduce(DeleteAction{});
+        reduce(actions::CursorLeft{});
+        return reduce(actions::Delete{});
     }
     else
     {
         return std::nullopt;
     }
+}
+
+void BufferSlice::reduce(const actions::RemoteInsert &a)
+{
+    if (int i = s_.buffer.insert(a.ch); (i >= 0) && (static_cast<std::size_t>(i) <= s_.cursor))
+    {
+        // Reasoning: if someone inserts a character before our cursor, we need to move our cursor to the right.
+        s_.cursor++;
+    }
+
+    calculate_lines();
+}
+
+void BufferSlice::reduce(const actions::RemoteDelete &a)
+{
+    s_.buffer.remove(a.ch);
+    calculate_lines();
 }
 
 /******************************************************************************/

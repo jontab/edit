@@ -3,14 +3,16 @@
 using namespace edit::core;
 using namespace edit::state;
 
-edit::InputInterpreter::InputInterpreter(Dispatcher &dispatcher, const EditorStore &store)
-    : dispatcher_(dispatcher)
+edit::InputInterpreter::InputInterpreter(decltype(action_bus_) action_bus,
+    core::Bus<core::Event> &event_bus,
+    const EditorStore &store)
+    : action_bus_(action_bus)
     , store_(store)
 {
-    dispatcher.on_event<KeyPressedEvent>([this](const auto &ev) { handle(ev); });
+    event_bus.on<events::KeyPressed>([this](const auto &ev) { handle(ev); });
 }
 
-void edit::InputInterpreter::handle(const KeyPressedEvent &ev)
+void edit::InputInterpreter::handle(const events::KeyPressed &ev)
 {
     switch (store_.mode().mode())
     {
@@ -19,41 +21,41 @@ void edit::InputInterpreter::handle(const KeyPressedEvent &ev)
         break;
     case Mode::InsertMode:
     case Mode::CommandMode:
-        dispatcher_.dispatch(InsertAction{ev.ch});
-        dispatcher_.dispatch(CursorRightAction{});
+        action_bus_.post(actions::Insert{ev.ch});
+        action_bus_.post(actions::CursorRight{});
         break;
     default:
         break;
     }
 }
 
-void edit::InputInterpreter::handle_normal_mode(const KeyPressedEvent &ev)
+void edit::InputInterpreter::handle_normal_mode(const events::KeyPressed &ev)
 {
     // TODO: Configurable key-maps!
     switch (ev.ch)
     {
     case 'i':
-        dispatcher_.dispatch(ChangeModeAction{Mode::InsertMode});
+        action_bus_.post(actions::ChangeMode{Mode::InsertMode});
         break;
     case ':':
-        dispatcher_.dispatch(ChangeModeAction{Mode::CommandMode});
+        action_bus_.post(actions::ChangeMode{Mode::CommandMode});
         break;
 
     case 'j':
-        dispatcher_.dispatch(CursorDownAction{});
+        action_bus_.post(actions::CursorDown{});
         break;
     case 'k':
-        dispatcher_.dispatch(CursorUpAction{});
+        action_bus_.post(actions::CursorUp{});
         break;
     case 'h':
-        dispatcher_.dispatch(CursorLeftAction{});
+        action_bus_.post(actions::CursorLeft{});
         break;
     case 'l':
-        dispatcher_.dispatch(CursorRightAction{});
+        action_bus_.post(actions::CursorRight{});
         break;
 
     case 'x':
-        dispatcher_.dispatch(DeleteAction{});
+        action_bus_.post(actions::Delete{});
         break;
     default:
         break;

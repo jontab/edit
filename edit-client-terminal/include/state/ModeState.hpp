@@ -7,7 +7,7 @@ namespace edit::state
 
 struct ModeState
 {
-    edit::core::Mode mode = edit::core::Mode::NormalMode;
+    core::Mode mode = core::Mode::NormalMode;
 };
 
-} // namespace edit
+} // namespace edit::state

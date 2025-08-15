@@ -42,10 +42,10 @@ TEST(BufferSliceTests, CursorUp_WorksAsExpected)
         {.ch = '!',  .is_deleted = false},
     };
     BufferSlice buf{std::move(chars)};
-    verify_cursor<CursorUpAction>(buf, 7, {1, 0}, {0, 0});  // Moving up normally.
-    verify_cursor<CursorUpAction>(buf, 0, {0, 0}, {0, 0});  // Moving up from first row is a no-op.
-    verify_cursor<CursorUpAction>(buf, 9, {1, 2}, {0, 2});  // Moving up from a deleted character.
-    verify_cursor<CursorUpAction>(buf, 15, {1, 7}, {0, 6}); // Moving up from a longer row clamps.
+    verify_cursor<actions::CursorUp>(buf, 7, {1, 0}, {0, 0});  // Moving up normally.
+    verify_cursor<actions::CursorUp>(buf, 0, {0, 0}, {0, 0});  // Moving up from first row is a no-op.
+    verify_cursor<actions::CursorUp>(buf, 9, {1, 2}, {0, 2});  // Moving up from a deleted character.
+    verify_cursor<actions::CursorUp>(buf, 15, {1, 7}, {0, 6}); // Moving up from a longer row clamps.
 }
 
 TEST(BufferSliceTests, CursorDown_WorksAsExpected)
@@ -68,10 +68,10 @@ TEST(BufferSliceTests, CursorDown_WorksAsExpected)
         {.ch = '!',  .is_deleted = false},
     };
     BufferSlice buf{std::move(chars)};
-    verify_cursor<CursorDownAction>(buf, 0, {0, 0}, {1, 0}); // Moving down normally.
-    verify_cursor<CursorDownAction>(buf, 9, {1, 0}, {1, 0}); // Moving down from final row is a no-op.
-    verify_cursor<CursorDownAction>(buf, 5, {0, 5}, {1, 5}); // Moving down from a deleted character.
-    verify_cursor<CursorDownAction>(buf, 8, {0, 7}, {1, 6}); // Moving down from a longer row clamps.
+    verify_cursor<actions::CursorDown>(buf, 0, {0, 0}, {1, 0}); // Moving down normally.
+    verify_cursor<actions::CursorDown>(buf, 9, {1, 0}, {1, 0}); // Moving down from final row is a no-op.
+    verify_cursor<actions::CursorDown>(buf, 5, {0, 5}, {1, 5}); // Moving down from a deleted character.
+    verify_cursor<actions::CursorDown>(buf, 8, {0, 7}, {1, 6}); // Moving down from a longer row clamps.
 }
 
 TEST(BufferSliceTests, CursorLeft_WorksAsExpected)
@@ -84,10 +84,10 @@ TEST(BufferSliceTests, CursorLeft_WorksAsExpected)
         {.ch = 'o', .is_deleted = false},
     };
     BufferSlice buf{std::move(chars)};
-    verify_cursor<CursorLeftAction>(buf, 1, {0, 1}, {0, 0}); // Moving left normally.
-    verify_cursor<CursorLeftAction>(buf, 0, {0, 0}, {0, 0}); // Moving left from origin is a no-op.
-    verify_cursor<CursorLeftAction>(buf, 3, {0, 2}, {0, 1}); // Moving left from a deleted character.
-    verify_cursor<CursorLeftAction>(buf, 4, {0, 2}, {0, 1}); // Moving left over a deleted character.
+    verify_cursor<actions::CursorLeft>(buf, 1, {0, 1}, {0, 0}); // Moving left normally.
+    verify_cursor<actions::CursorLeft>(buf, 0, {0, 0}, {0, 0}); // Moving left from origin is a no-op.
+    verify_cursor<actions::CursorLeft>(buf, 3, {0, 2}, {0, 1}); // Moving left from a deleted character.
+    verify_cursor<actions::CursorLeft>(buf, 4, {0, 2}, {0, 1}); // Moving left over a deleted character.
 }
 
 TEST(BufferSliceTests, CursorRight_WorksAsExpected)
@@ -100,8 +100,8 @@ TEST(BufferSliceTests, CursorRight_WorksAsExpected)
         {.ch = 'o', .is_deleted = false},
     };
     BufferSlice buf{std::move(chars)};
-    verify_cursor<CursorRightAction>(buf, 0, {0, 0}, {0, 1}); // Moving right normally.
-    verify_cursor<CursorRightAction>(buf, 5, {0, 3}, {0, 3}); // Moving right from `EOF` is a no-op.
-    verify_cursor<CursorRightAction>(buf, 2, {0, 2}, {0, 3}); // Moving right from a deleted character.
-    verify_cursor<CursorRightAction>(buf, 1, {0, 1}, {0, 2}); // Moving right over a deleted character.
+    verify_cursor<actions::CursorRight>(buf, 0, {0, 0}, {0, 1}); // Moving right normally.
+    verify_cursor<actions::CursorRight>(buf, 5, {0, 3}, {0, 3}); // Moving right from `EOF` is a no-op.
+    verify_cursor<actions::CursorRight>(buf, 2, {0, 2}, {0, 3}); // Moving right from a deleted character.
+    verify_cursor<actions::CursorRight>(buf, 1, {0, 1}, {0, 2}); // Moving right over a deleted character.
 }

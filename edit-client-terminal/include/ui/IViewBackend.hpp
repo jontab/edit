@@ -1,10 +1,12 @@
 #pragma once
 
-#include "core/Dispatcher.hpp"
+#include "core/Action.hpp"
+#include "core/Bus.hpp"
+#include "core/Event.hpp"
 #include "core/Point.hpp"
 #include <cstdint>
 #include <functional>
-#include <string>
+#include <string_view>
 
 namespace edit::ui
 {
@@ -20,11 +22,12 @@ class IViewBackend
     virtual void clear() = 0;
     virtual void flush() = 0;
     virtual void put_char(unsigned int y, unsigned int x, std::uint32_t ch) = 0;
-    virtual void put_text(unsigned int y, unsigned int x, std::string text) = 0;
+    virtual void put_text(unsigned int y, unsigned int x, const std::string_view &text) = 0;
     virtual void set_cursor(unsigned int y, unsigned int x) = 0;
     virtual unsigned int height() = 0;
     virtual unsigned int width() = 0;
-    virtual void poll(edit::core::Dispatcher &dispatcher,
+    virtual void poll(core::Bus<core::Action> &action_bus,
+        core::Bus<core::Event> &event_bus,
         const std::function<void(unsigned int, unsigned int)> &on_resize) = 0;
 };
 

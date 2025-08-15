@@ -1,11 +1,24 @@
 #include "network/BeastNetworkComponent.hpp"
+#include "core/ActionTypes.hpp"
 #include <iostream>
 
+#include <boost/asio.hpp>
+#include <boost/asio/ssl.hpp>
+#include <boost/beast.hpp>
+#include <boost/beast/ssl.hpp>
+
+using namespace edit::common;
 using namespace edit::core;
+using namespace edit::core::actions;
+using namespace edit::core::events;
 using namespace edit::network;
 
-BeastNetworkComponent::BeastNetworkComponent(std::shared_ptr<asio::io_context> ioc)
-    : host_()
+BeastNetworkComponent::BeastNetworkComponent(decltype(action_bus_) action_bus,
+    core::Bus<core::Event> &event_bus,
+    std::shared_ptr<asio::io_context> ioc,
+    std::unique_ptr<IMessageHandler> &&message_handler)
+    : action_bus_(action_bus)
+    , host_()
     , port_()
     , path_()
     , apikey_()
@@ -13,12 +26,17 @@ BeastNetworkComponent::BeastNetworkComponent(std::shared_ptr<asio::io_context> i
     , ctx_(ssl::context::tlsv12_client)
     , ws_(*ioc, ctx_)
     , resolver_(*ioc)
+    , buffer_()
     , reconnect_timer_(*ioc)
     , reconnect_attempts_(0)
-    , buffer_()
     , connect_promise_()
-    , dispatcher_()
+    , is_writing_(false)
+    , write_queue_()
+    , message_handler_(std::move(message_handler))
 {
+    event_bus.on<CharInserted>([this](const auto &ev) { on_local_event(ev); });
+    event_bus.on<CharDeleted>([this](const auto &ev) { on_local_event(ev); });
+
     // Use OS-dependent configuration for default certificate authority paths.
     boost::system::error_code ec;
     ctx_.set_default_verify_paths(ec);
@@ -58,14 +76,6 @@ std::future<NetworkConnectResult> BeastNetworkComponent::connect(const std::stri
     apikey_ = apikey;
     do_resolve();
     return connect_promise_->get_future();
-}
-
-/**
- * @brief Binds `Dispatcher` to this component. Used for sending and receiving actions and events.
- */
-void BeastNetworkComponent::bind(Dispatcher &dispatcher)
-{
-    dispatcher_ = std::ref(dispatcher);
 }
 
 void BeastNetworkComponent::do_resolve()
@@ -116,7 +126,7 @@ void BeastNetworkComponent::do_websocket_handshake()
         {
             self->connect_promise_->set_value({true, ""});
             self->connect_promise_.reset();
-            self->ioc_->stop();
+            self->do_read();
         }
         else
         {
@@ -130,10 +140,39 @@ void BeastNetworkComponent::do_read()
     ws_.async_read(buffer_, [self = shared_from_this()](boost::system::error_code ec, std::size_t bytes) {
         if (ec.failed())
             return self->on_connect_failure("read: " + ec.message());
-        // std::string message = boost::beast::buffers_to_string(self->buffer_.data());
+
+        auto data = self->buffer_.data();
+        auto text = boost::beast::buffers_to_string(data);
+        self->message_handler_->process(text);
+
         self->buffer_.consume(bytes);
         self->do_read();
     });
+}
+
+void BeastNetworkComponent::do_write()
+{
+    ws_.async_write(
+        asio::buffer(*write_queue_.front()), [self = shared_from_this()](boost::system::error_code ec, std::size_t) {
+            if (ec)
+            {
+                self->is_writing_ = false;
+                return self->on_connect_failure("write: " + ec.message());
+            }
+
+            // Discard the message when we have successfully sent it.
+            self->write_queue_.pop_front();
+
+            // Continue to write until there are no messages left.
+            if (!self->write_queue_.empty())
+            {
+                self->do_write();
+            }
+            else
+            {
+                self->is_writing_ = false;
+            }
+        });
 }
 
 void BeastNetworkComponent::reconnect()
@@ -168,10 +207,31 @@ void BeastNetworkComponent::on_connect_failure(const std::string &message)
     {
         connect_promise_->set_value({false, message});
         connect_promise_.reset();
-        ioc_->stop();
     }
     else
     {
         reconnect();
+    }
+}
+
+void BeastNetworkComponent::on_local_event(const core::events::CharDeleted &ev)
+{
+    on_local_event(message_handler_->serialize(ev));
+}
+
+void BeastNetworkComponent::on_local_event(const core::events::CharInserted &ev)
+{
+    on_local_event(message_handler_->serialize(ev));
+}
+
+void BeastNetworkComponent::on_local_event(const std::string &serialized)
+{
+    write_queue_.push_back(std::make_shared<std::string>(serialized));
+
+    // Start writing if we aren't already.
+    if (!is_writing_)
+    {
+        is_writing_ = true;
+        do_write();
     }
 }

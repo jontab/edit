@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Action.hpp"
-#include "Event.hpp"
 #include <functional>
 #include <map>
 #include <memory>
+#include <mutex>
+#include <queue>
 #include <typeindex>
 
 namespace edit::core
@@ -12,7 +12,6 @@ namespace edit::core
 
 template <typename Message> class Bus
 {
-    // Lets us store handlers for different types in the same container.
     class IHandler
     {
       public:
@@ -22,40 +21,73 @@ template <typename Message> class Bus
 
     template <typename T> class Handler : public IHandler
     {
-        std::function<void(const T &)> callback;
+        std::function<void(const T &)> callback_;
 
       public:
-        explicit Handler(std::function<void(const T &)> type)
-            : callback(std::move(type))
+        explicit Handler(std::function<void(const T &)> callback)
+            : callback_(std::move(callback))
         {
         }
 
         void dispatch(const Message &message) override
         {
-            callback(std::get<T>(message));
+            callback_(std::get<T>(message));
         }
     };
 
-    std::map<std::type_index, std::vector<std::unique_ptr<IHandler>>> subscribers;
+    std::map<std::type_index, std::vector<std::unique_ptr<IHandler>>> subscribers_;
+    std::queue<Message> queue_;
+    std::mutex lock_;
 
   public:
+    /**
+     * @brief Registers a handler for a given message type.
+     *
+     * @tparam T Message type.
+     *
+     * @param handler Handler.
+     */
     template <typename T> void on(std::function<void(const T &)> handler)
     {
-        subscribers[typeid(T)].push_back(std::make_unique<Handler<T>>(std::move(handler)));
+        subscribers_[typeid(T)].push_back(std::make_unique<Handler<T>>(std::move(handler)));
     }
 
-    void publish(const Message &message)
+    /**
+     * @brief Schedule a message to be published later, thread-safe.
+     * @param message Message.
+     */
+    void post(const Message &message)
     {
-        // `std::visit` is idiomatic to do something different for each type of a `std::variant`.
+        std::lock_guard<decltype(lock_)> lock(lock_);
+        queue_.push(message);
+    }
+
+    /**
+     * @brief Publishes all pending messages and executes their handlers on this thread, thread-safe.
+     */
+    void publish()
+    {
+        decltype(queue_) local;
+        {
+            std::lock_guard<decltype(lock_)> lock(lock_);
+            std::swap(local, queue_);
+        }
+
+        while (!local.empty())
+        {
+            const auto &message = local.front();
+            dispatch(message);
+            local.pop();
+        }
+    }
+
+  private:
+    void dispatch(const Message &message)
+    {
         std::visit(
             [this](const auto &specific) {
-                // Q: What's the point of `std::decay_t`?
-                // A: `decltype(specific)` might return `const CursorUpAction &`. If we try to look that up in our
-                //    subscriberslist, we're not going to find anything, because we registered the handlers to
-                //    `CursorUpAction`. It takes our `const CursorUpAction &` and turns it into `CursorUpAction`.
                 using T = std::decay_t<decltype(specific)>;
-                auto it = subscribers.find(typeid(T));
-                if (it != subscribers.end())
+                if (auto it = subscribers_.find(typeid(T)); it != subscribers_.end())
                     for (const auto &handler : it->second)
                         handler->dispatch(specific);
             },
@@ -63,7 +95,4 @@ template <typename Message> class Bus
     }
 };
 
-using ActionBus = Bus<Action>;
-using EventBus = Bus<Event>;
-
-} // namespace edit
+} // namespace edit::core

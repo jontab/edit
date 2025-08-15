@@ -18,6 +18,7 @@ find_package(OpenSSL REQUIRED)
 
 add_library(edit-client-terminal-lib
     ${CMAKE_CURRENT_SOURCE_DIR}/src/network/BeastNetworkComponent.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/network/JsonMessageHandler.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/state/BufferSlice.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/state/BufferState.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/state/EditorStore.cpp
@@ -63,8 +64,10 @@ if(BUILD_TESTING)
 
     add_executable(edit-client-terminal-tests
         ${CMAKE_CURRENT_SOURCE_DIR}/tests/BufferSliceTests.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/tests/DispatcherTests.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/BusTests.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/CommandInterpreterTests.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/tests/EditorTests.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/InputInterpreterTests.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/tests/StatusSliceTests.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/tests/StatusViewTests.cpp)
 
